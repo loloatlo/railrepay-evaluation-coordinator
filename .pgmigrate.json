@@ -1,0 +1,12 @@
+{
+  "database-url-var": "DATABASE_URL",
+  "migrations-table": "evaluation_coordinator_pgmigrations",
+  "migrations-schema": "public",
+  "dir": "migrations",
+  "direction": "up",
+  "count": null,
+  "verbose": true,
+  "decamelize": false,
+  "ignore-pattern": null,
+  "single-transaction": true
+}
