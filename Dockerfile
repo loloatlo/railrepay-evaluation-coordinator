@@ -14,6 +14,7 @@ RUN npm ci
 # Copy source code
 COPY src/ ./src/
 COPY migrations/ ./migrations/
+COPY .pgmigrate.json ./
 
 # Build TypeScript
 RUN npm run build
@@ -32,6 +33,7 @@ RUN npm ci --only=production
 # Copy built artifacts from builder
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/migrations ./migrations
+COPY .pgmigrate.json ./
 
 # Set NODE_ENV
 ENV NODE_ENV=production
