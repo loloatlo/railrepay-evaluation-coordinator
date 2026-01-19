@@ -52,8 +52,8 @@ export class WorkflowRepository {
 
     const existingWorkflow = await this.db.query(checkQuery, [journeyId]);
 
-    // Verify query result exists before accessing .rows
-    if (existingWorkflow && existingWorkflow.rows && existingWorkflow.rows.length > 0) {
+    // PostgresClient.query() returns rows array directly, not full pg result
+    if (existingWorkflow && Array.isArray(existingWorkflow) && existingWorkflow.length > 0) {
       const error: any = new Error(`Active workflow already exists for journey ${journeyId}`);
       error.status = 422;
       throw error;
@@ -73,16 +73,16 @@ export class WorkflowRepository {
 
     const result = await this.db.query(insertQuery, [id, journeyId, correlationId, 'INITIATED']);
 
-    // Verify query result exists before accessing .rows
-    if (!result || !result.rows) {
+    // PostgresClient.query() returns rows array directly, not full pg result
+    if (!result || !Array.isArray(result)) {
       throw new Error('Failed to create workflow: invalid result from database');
     }
 
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       throw new Error('Failed to create workflow: no row returned from INSERT');
     }
 
-    return result.rows[0];
+    return result[0];
   }
 
   async updateWorkflowStatus(workflowId: string, status: string, correlationId: string): Promise<void> {
@@ -124,12 +124,12 @@ export class WorkflowRepository {
     // Payload is NOT NULL in schema, so provide empty object for PENDING steps
     const result = await this.db.query(query, [id, workflowId, stepType, status, {}]);
 
-    // Verify query result exists before accessing .rows
-    if (!result || !result.rows || result.rows.length === 0) {
+    // PostgresClient.query() returns rows array directly, not full pg result
+    if (!result || !Array.isArray(result) || result.length === 0) {
       throw new Error('Failed to create workflow step: no result returned from database');
     }
 
-    return result.rows[0];
+    return result[0];
   }
 
   async updateWorkflowStep(
@@ -188,12 +188,12 @@ export class WorkflowRepository {
       false // published = false (transactional outbox pattern)
     ]);
 
-    // Verify query result exists before accessing .rows
-    if (!result || !result.rows || result.rows.length === 0) {
+    // PostgresClient.query() returns rows array directly, not full pg result
+    if (!result || !Array.isArray(result) || result.length === 0) {
       throw new Error('Failed to create outbox event: no result returned from database');
     }
 
-    return result.rows[0];
+    return result[0];
   }
 
   async getWorkflowByJourneyId(journeyId: string): Promise<EvaluationWorkflow | null> {
@@ -206,12 +206,12 @@ export class WorkflowRepository {
 
     const result = await this.db.query(query, [journeyId]);
 
-    // Verify query result exists before accessing .rows
-    if (!result || !result.rows) {
+    // PostgresClient.query() returns rows array directly, not full pg result
+    if (!result || !Array.isArray(result)) {
       return null;
     }
 
-    return result.rows[0] || null;
+    return result[0] || null;
   }
 
   async getWorkflowSteps(workflowId: string): Promise<WorkflowStep[]> {
@@ -223,11 +223,11 @@ export class WorkflowRepository {
 
     const result = await this.db.query(query, [workflowId]);
 
-    // Verify query result exists before accessing .rows
-    if (!result || !result.rows) {
+    // PostgresClient.query() returns rows array directly, not full pg result
+    if (!result || !Array.isArray(result)) {
       return [];
     }
 
-    return result.rows;
+    return result;
   }
 }
