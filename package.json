@@ -11,7 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "migrate:up": "node-pg-migrate up",
+    "migrate:up": "node-pg-migrate up --migrations-table evaluation_coordinator_pgmigrations",
     "migrate:down": "node-pg-migrate down",
     "migrate:create": "node-pg-migrate create",
     "lint": "eslint src --ext .ts",
