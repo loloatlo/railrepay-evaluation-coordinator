@@ -1,0 +1,1124 @@
+
+> @railrepay/evaluation-coordinator@1.0.0 test
+> vitest run --coverage
+
+
+ RUN  v1.6.1 /mnt/c/Users/nicbo/Documents/RailRepay MVP/services/evaluation-coordinator
+      Coverage enabled with v8
+
+stdout | tests/unit/eligibility-client.test.ts > EligibilityClient - Error Handling Branches > should return eligibility result when API call succeeds
+01:02:52 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "journey_id": "550e8400-e29b-41d4-a716-446655440000",
+  "url": "http://localhost:3002/eligibility/550e8400-e29b-41d4-a716-446655440000"
+}
+01:02:52 [[32minfo[39m]: Eligibility check successful {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "eligible": true
+}
+
+stdout | tests/unit/eligibility-client.test.ts > EligibilityClient - Error Handling Branches > should throw TIMEOUT error when request times out (ETIMEDOUT)
+01:02:52 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "journey_id": "550e8400-e29b-41d4-a716-446655440000",
+  "url": "http://localhost:3002/eligibility/550e8400-e29b-41d4-a716-446655440000"
+}
+01:02:52 [[31merror[39m]: Eligibility check timeout {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "error": "TIMEOUT"
+}
+
+stdout | tests/unit/eligibility-client.test.ts > EligibilityClient - Error Handling Branches > should throw TIMEOUT error when connection aborted (ECONNABORTED)
+01:02:52 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "journey_id": "550e8400-e29b-41d4-a716-446655440000",
+  "url": "http://localhost:3002/eligibility/550e8400-e29b-41d4-a716-446655440000"
+}
+01:02:52 [[31merror[39m]: Eligibility check timeout {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "error": "TIMEOUT"
+}
+
+stdout | tests/unit/eligibility-client.test.ts > EligibilityClient - Error Handling Branches > should throw HTTP_ERROR_400 when API returns 400 Bad Request
+01:02:52 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "journey_id": "550e8400-e29b-41d4-a716-446655440000",
+  "url": "http://localhost:3002/eligibility/550e8400-e29b-41d4-a716-446655440000"
+}
+01:02:52 [[31merror[39m]: Eligibility check failed {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "status": 400,
+  "error": {
+    "error": "Invalid journey_id format"
+  }
+}
+01:02:52 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "journey_id": "550e8400-e29b-41d4-a716-446655440000",
+  "url": "http://localhost:3002/eligibility/550e8400-e29b-41d4-a716-446655440000"
+}
+01:02:52 [[31merror[39m]: Eligibility check failed {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "status": 400,
+  "error": {
+    "error": "Invalid journey_id format"
+  }
+}
+
+stdout | tests/unit/eligibility-client.test.ts > EligibilityClient - Error Handling Branches > should throw HTTP_ERROR_500 when API returns 500 Internal Server Error
+01:02:52 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "journey_id": "550e8400-e29b-41d4-a716-446655440000",
+  "url": "http://localhost:3002/eligibility/550e8400-e29b-41d4-a716-446655440000"
+}
+01:02:52 [[31merror[39m]: Eligibility check failed {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "status": 500,
+  "error": {
+    "error": "INTERNAL_SERVER_ERROR",
+    "details": "Database connection failed"
+  }
+}
+01:02:52 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "journey_id": "550e8400-e29b-41d4-a716-446655440000",
+  "url": "http://localhost:3002/eligibility/550e8400-e29b-41d4-a716-446655440000"
+}
+01:02:52 [[31merror[39m]: Eligibility check failed {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "status": 500,
+  "error": {
+    "error": "INTERNAL_SERVER_ERROR",
+    "details": "Database connection failed"
+  }
+}
+
+stdout | tests/unit/eligibility-client.test.ts > EligibilityClient - Error Handling Branches > should throw HTTP_ERROR_404 when API returns 404 Not Found
+01:02:52 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "journey_id": "550e8400-e29b-41d4-a716-446655440000",
+  "url": "http://localhost:3002/eligibility/550e8400-e29b-41d4-a716-446655440000"
+}
+01:02:52 [[31merror[39m]: Eligibility check failed {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "status": 404,
+  "error": {
+    "error": "Journey not found"
+  }
+}
+
+stdout | tests/unit/eligibility-client.test.ts > EligibilityClient - Error Handling Branches > should re-throw error when network fails without HTTP response (ECONNREFUSED)
+01:02:52 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "journey_id": "550e8400-e29b-41d4-a716-446655440000",
+  "url": "http://localhost:3002/eligibility/550e8400-e29b-41d4-a716-446655440000"
+}
+01:02:52 [[31merror[39m]: Eligibility check error {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "error": "Unknown error"
+}
+
+stdout | tests/unit/eligibility-client.test.ts > EligibilityClient - Error Handling Branches > should re-throw error when generic JavaScript error occurs
+01:02:52 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "journey_id": "550e8400-e29b-41d4-a716-446655440000",
+  "url": "http://localhost:3002/eligibility/550e8400-e29b-41d4-a716-446655440000"
+}
+01:02:52 [[31merror[39m]: Eligibility check error {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "error": "Unexpected error: out of memory"
+}
+
+stdout | tests/unit/eligibility-client.test.ts > EligibilityClient - Error Handling Branches > should return empty object when API returns 200 with empty body
+01:02:52 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "journey_id": "550e8400-e29b-41d4-a716-446655440000",
+  "url": "http://localhost:3002/eligibility/550e8400-e29b-41d4-a716-446655440000"
+}
+01:02:52 [[32minfo[39m]: Eligibility check successful {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000"
+}
+
+stdout | tests/unit/eligibility-client.test.ts > EligibilityClient - Error Handling Branches > should include correlation ID in X-Correlation-ID header
+01:02:52 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "journey_id": "550e8400-e29b-41d4-a716-446655440000",
+  "url": "http://localhost:3002/eligibility/550e8400-e29b-41d4-a716-446655440000"
+}
+01:02:52 [[32minfo[39m]: Eligibility check successful {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "eligible": false
+}
+
+stdout | tests/unit/eligibility-client.test.ts > EligibilityClient - Error Handling Branches > should use 30 second timeout for API requests
+01:02:52 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "journey_id": "550e8400-e29b-41d4-a716-446655440000",
+  "url": "http://localhost:3002/eligibility/550e8400-e29b-41d4-a716-446655440000"
+}
+01:02:52 [[32minfo[39m]: Eligibility check successful {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "eligible": false
+}
+
+stdout | tests/unit/eligibility-client.test.ts > EligibilityClient - Error Handling Branches > should construct correct URL with journey ID
+01:02:52 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "journey_id": "550e8400-e29b-41d4-a716-446655440000",
+  "url": "http://localhost:3002/eligibility/550e8400-e29b-41d4-a716-446655440000"
+}
+01:02:52 [[32minfo[39m]: Eligibility check successful {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "eligible": true
+}
+
+ ✓ tests/unit/eligibility-client.test.ts  (12 tests) 14ms
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests
+Starting PostgreSQL container for integration tests...
+
+stdout | tests/unit/evaluation-workflow.test.ts > AC-1: Evaluation Workflow Initiation > should create workflow with status INITIATED when POST /evaluate/:journey_id
+01:02:56 [[32minfo[39m]: Initiating evaluation workflow {
+  "correlation_id": "04a3b3c5-835f-4d1f-9f27-523f9ae6e0c9",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+01:02:56 [[32minfo[39m]: Creating evaluation workflow {
+  "correlation_id": "04a3b3c5-835f-4d1f-9f27-523f9ae6e0c9",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+01:02:56 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "04a3b3c5-835f-4d1f-9f27-523f9ae6e0c9",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:02:56 [[31merror[39m]: Eligibility check error {
+  "correlation_id": "04a3b3c5-835f-4d1f-9f27-523f9ae6e0c9",
+  "error": "Failed to create workflow step: no result returned from database"
+}
+01:02:56 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "04a3b3c5-835f-4d1f-9f27-523f9ae6e0c9",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:02:56 [[31merror[39m]: Eligibility check failed {
+  "correlation_id": "04a3b3c5-835f-4d1f-9f27-523f9ae6e0c9",
+  "error": "Failed to create workflow step: no result returned from database"
+}
+
+stdout | tests/unit/evaluation-workflow.test.ts > AC-1: Evaluation Workflow Initiation > should generate unique correlation_id for tracing when initiating workflow
+01:02:56 [[32minfo[39m]: Initiating evaluation workflow {
+  "correlation_id": "195582c4-5c0c-4098-8508-487994b484a4",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+01:02:56 [[32minfo[39m]: Creating evaluation workflow {
+  "correlation_id": "195582c4-5c0c-4098-8508-487994b484a4",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+01:02:56 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "195582c4-5c0c-4098-8508-487994b484a4",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:02:56 [[31merror[39m]: Eligibility check error {
+  "correlation_id": "195582c4-5c0c-4098-8508-487994b484a4",
+  "error": "Failed to create workflow step: no result returned from database"
+}
+01:02:56 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "195582c4-5c0c-4098-8508-487994b484a4",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:02:56 [[31merror[39m]: Eligibility check failed {
+  "correlation_id": "195582c4-5c0c-4098-8508-487994b484a4",
+  "error": "Failed to create workflow step: no result returned from database"
+}
+
+stdout | tests/unit/evaluation-workflow.test.ts > AC-2: Eligibility Engine Integration > should call eligibility-engine API with journey_id after workflow initiation
+01:02:56 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "df84407e-bf5f-4263-a845-55865ab7ed17",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:02:56 [[32minfo[39m]: Updating workflow step {
+  "correlation_id": "df84407e-bf5f-4263-a845-55865ab7ed17",
+  "step_id": "step-1",
+  "status": "COMPLETED"
+}
+
+stdout | tests/unit/evaluation-workflow.test.ts > AC-2: Eligibility Engine Integration > should create workflow_step record with type ELIGIBILITY_CHECK and status PENDING
+01:02:56 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "673dc450-84ed-45a9-8aa7-3fe320566b34",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:02:56 [[32minfo[39m]: Updating workflow step {
+  "correlation_id": "673dc450-84ed-45a9-8aa7-3fe320566b34",
+  "step_id": "step-1",
+  "status": "COMPLETED"
+}
+
+stdout | tests/unit/evaluation-workflow.test.ts > AC-2: Eligibility Engine Integration > should update workflow_step status to COMPLETED when eligibility check succeeds
+01:02:56 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "dc6f28ef-d5b2-4f78-adb1-b4378924f845",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:02:56 [[32minfo[39m]: Updating workflow step {
+  "correlation_id": "dc6f28ef-d5b2-4f78-adb1-b4378924f845",
+  "step_id": "step-1",
+  "status": "COMPLETED"
+}
+
+stdout | tests/unit/evaluation-workflow.test.ts > AC-2: Eligibility Engine Integration > should store eligibility result in workflow_step payload when check succeeds
+01:02:56 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "2c9f705d-4b1f-47c9-94a4-5e019f22a211",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:02:56 [[32minfo[39m]: Updating workflow step {
+  "correlation_id": "2c9f705d-4b1f-47c9-94a4-5e019f22a211",
+  "step_id": "step-1",
+  "status": "COMPLETED"
+}
+
+stdout | tests/unit/evaluation-workflow.test.ts > AC-2: Eligibility Engine Integration > should handle timeout (30s) with step status TIMEOUT
+01:02:56 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "d2ee1ba3-d97f-4f45-80d8-ffa45720de0c",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:02:56 [[32minfo[39m]: Updating workflow step {
+  "correlation_id": "d2ee1ba3-d97f-4f45-80d8-ffa45720de0c",
+  "step_id": "step-1",
+  "status": "TIMEOUT"
+}
+
+stdout | tests/unit/evaluation-workflow.test.ts > AC-2: Eligibility Engine Integration > should handle 4xx error with step status FAILED and error details
+01:02:56 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "2a1b4a44-8c21-406c-b8b5-b46dd5d82446",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:02:56 [[32minfo[39m]: Updating workflow step {
+  "correlation_id": "2a1b4a44-8c21-406c-b8b5-b46dd5d82446",
+  "step_id": "step-1",
+  "status": "FAILED"
+}
+
+stdout | tests/unit/evaluation-workflow.test.ts > AC-2: Eligibility Engine Integration > should handle 5xx error with step status FAILED and error details
+01:02:56 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "776f6015-b37a-40b3-979e-d96e85ec1500",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:02:56 [[32minfo[39m]: Updating workflow step {
+  "correlation_id": "776f6015-b37a-40b3-979e-d96e85ec1500",
+  "step_id": "step-1",
+  "status": "FAILED"
+}
+
+stdout | tests/unit/evaluation-workflow.test.ts > AC-2: Eligibility Engine Integration > should handle ECONNABORTED timeout with step status TIMEOUT
+01:02:56 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "92eadb56-bd0b-4b86-9074-848ef91f3984",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:02:56 [[32minfo[39m]: Updating workflow step {
+  "correlation_id": "92eadb56-bd0b-4b86-9074-848ef91f3984",
+  "step_id": "step-1",
+  "status": "TIMEOUT"
+}
+
+stdout | tests/unit/evaluation-workflow.test.ts > AC-2: Eligibility Engine Integration > should handle network error without response object (ECONNREFUSED)
+01:02:56 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "e1f900e2-e223-4b08-9a94-4f29819c68a4",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:02:56 [[32minfo[39m]: Updating workflow step {
+  "correlation_id": "e1f900e2-e223-4b08-9a94-4f29819c68a4",
+  "step_id": "step-1",
+  "status": "FAILED"
+}
+
+stdout | tests/unit/evaluation-workflow.test.ts > AC-3: Partial Failure Handling > should mark step as FAILED with error details when eligibility check fails
+01:02:56 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "26a50e88-c1ad-4a9d-a288-31e8bb1dd8a9",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:02:56 [[32minfo[39m]: Updating workflow step {
+  "correlation_id": "26a50e88-c1ad-4a9d-a288-31e8bb1dd8a9",
+  "step_id": "step-1",
+  "status": "FAILED"
+}
+
+stdout | tests/unit/evaluation-workflow.test.ts > AC-3: Partial Failure Handling > should update workflow status to PARTIAL_SUCCESS when step fails but workflow continues
+01:02:56 [[31merror[39m]: Workflow step failed {
+  "correlation_id": "72a43d1d-202b-4a19-aaa6-2a07b06244f1",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "step_id": "step-1",
+  "error": "Step execution failed"
+}
+
+stdout | tests/unit/evaluation-workflow.test.ts > AC-4: Claim Submission Trigger > should write CLAIM_SUBMISSION_REQUESTED outbox event when eligibility passes
+01:02:56 [[32minfo[39m]: Triggering claim submission {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+01:02:56 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "step_type": "CLAIM_CREATION"
+}
+01:02:56 [[32minfo[39m]: Updating workflow status {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "IN_PROGRESS"
+}
+01:02:56 [[32minfo[39m]: Creating outbox event {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "event_type": "CLAIM_SUBMISSION_REQUESTED"
+}
+
+stdout | tests/unit/evaluation-workflow.test.ts > AC-4: Claim Submission Trigger > should NOT write outbox event when eligibility check fails
+01:02:56 [[32minfo[39m]: Updating workflow status {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "COMPLETED"
+}
+
+stdout | tests/unit/evaluation-workflow.test.ts > AC-4: Claim Submission Trigger > should create workflow_step for CLAIM_CREATION when triggering claim
+01:02:56 [[32minfo[39m]: Triggering claim submission {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+01:02:56 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "step_type": "CLAIM_CREATION"
+}
+01:02:56 [[32minfo[39m]: Updating workflow status {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "IN_PROGRESS"
+}
+01:02:56 [[32minfo[39m]: Creating outbox event {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "event_type": "CLAIM_SUBMISSION_REQUESTED"
+}
+
+stdout | tests/unit/evaluation-workflow.test.ts > AC-4: Claim Submission Trigger > should update workflow status to IN_PROGRESS when claim triggered
+01:02:56 [[32minfo[39m]: Triggering claim submission {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+01:02:56 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "step_type": "CLAIM_CREATION"
+}
+01:02:56 [[32minfo[39m]: Updating workflow status {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "IN_PROGRESS"
+}
+01:02:56 [[32minfo[39m]: Creating outbox event {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "event_type": "CLAIM_SUBMISSION_REQUESTED"
+}
+
+stdout | tests/unit/evaluation-workflow.test.ts > AC-4: Claim Submission Trigger > should include journey_id, eligibility_result, and correlation_id in outbox event payload
+01:02:56 [[32minfo[39m]: Triggering claim submission {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+01:02:56 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "step_type": "CLAIM_CREATION"
+}
+01:02:56 [[32minfo[39m]: Updating workflow status {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "IN_PROGRESS"
+}
+01:02:56 [[32minfo[39m]: Creating outbox event {
+  "correlation_id": "123e4567-e89b-42d3-a456-426614174000",
+  "event_type": "CLAIM_SUBMISSION_REQUESTED"
+}
+
+ ✓ tests/unit/evaluation-workflow.test.ts  (21 tests) 8560ms
+stdout | tests/unit/infrastructure-wiring.test.ts > Infrastructure Wiring - Shared Package Usage > @railrepay/winston-logger usage (MANDATORY) > should use logger instance that includes correlation_id in all calls (WILL FAIL - no implementation)
+01:02:56 [[32minfo[39m]: Test message {
+  "correlation_id": "123"
+}
+
+ ✓ tests/unit/infrastructure-wiring.test.ts  (9 tests) 10032ms
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests
+Starting PostgreSQL container for HTTP integration tests...
+
+stdout | tests/integration/migrations.test.ts > evaluation_coordinator schema migrations
+Starting PostgreSQL container...
+
+stdout | tests/integration/migrations.test.ts > evaluation_coordinator schema migrations
+Migration path: /mnt/c/Users/nicbo/Documents/RailRepay MVP/services/evaluation-coordinator/migrations
+
+ ✓ tests/integration/migrations.test.ts  (11 tests) 4108ms
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-1: Evaluation Workflow Initiation (HTTP) > should return 202 Accepted with workflow_id when POST /evaluate/:journey_id
+01:03:08 [[32minfo[39m]: Initiating evaluation workflow {
+  "correlation_id": "465a7148-9b88-4b4f-9361-00cb2facbaca",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-1: Evaluation Workflow Initiation (HTTP) > should return 202 Accepted with workflow_id when POST /evaluate/:journey_id
+01:03:08 [[32minfo[39m]: Creating evaluation workflow {
+  "correlation_id": "465a7148-9b88-4b4f-9361-00cb2facbaca",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-1: Evaluation Workflow Initiation (HTTP) > should return 202 Accepted with workflow_id when POST /evaluate/:journey_id
+01:03:08 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "465a7148-9b88-4b4f-9361-00cb2facbaca",
+  "workflow_id": "eecf56b4-5e59-4189-99fb-839a9d406310",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:03:08 [[32minfo[39m]: Evaluation workflow initiated successfully {
+  "correlation_id": "465a7148-9b88-4b4f-9361-00cb2facbaca",
+  "workflow_id": "eecf56b4-5e59-4189-99fb-839a9d406310",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-1: Evaluation Workflow Initiation (HTTP) > should return 400 Bad Request when journey_id is invalid UUID
+01:03:08 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "465a7148-9b88-4b4f-9361-00cb2facbaca",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17",
+  "url": "http://localhost:3002/eligibility/3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-1: Evaluation Workflow Initiation (HTTP) > should return 400 Bad Request when journey_id is invalid UUID
+01:03:08 [[31merror[39m]: Eligibility check error {
+  "correlation_id": "465a7148-9b88-4b4f-9361-00cb2facbaca",
+  "error": "connect ECONNREFUSED 127.0.0.1:3002"
+}
+01:03:08 [[31merror[39m]: Eligibility check error {
+  "correlation_id": "465a7148-9b88-4b4f-9361-00cb2facbaca",
+  "error": "connect ECONNREFUSED 127.0.0.1:3002"
+}
+01:03:08 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "465a7148-9b88-4b4f-9361-00cb2facbaca",
+  "workflow_id": "eecf56b4-5e59-4189-99fb-839a9d406310",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-1: Evaluation Workflow Initiation (HTTP) > should return 400 Bad Request when journey_id is invalid UUID
+01:03:08 [[32minfo[39m]: Updating workflow step {
+  "correlation_id": "465a7148-9b88-4b4f-9361-00cb2facbaca",
+  "step_id": "e3f79dc4-316f-4def-a806-15a5e32dbc36",
+  "status": "FAILED"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-1: Evaluation Workflow Initiation (HTTP) > should return 400 Bad Request when journey_id is invalid UUID
+01:03:08 [[32minfo[39m]: Updating workflow status {
+  "correlation_id": "465a7148-9b88-4b4f-9361-00cb2facbaca",
+  "workflow_id": "eecf56b4-5e59-4189-99fb-839a9d406310",
+  "status": "PARTIAL_SUCCESS"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-1: Evaluation Workflow Initiation (HTTP) > should return 400 Bad Request when journey_id is invalid UUID
+01:03:08 [[33mwarn[39m]: Invalid journey_id format {
+  "journey_id": "not-a-uuid"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-1: Evaluation Workflow Initiation (HTTP) > should actually insert workflow into database when POST /evaluate/:journey_id
+01:03:08 [[32minfo[39m]: Initiating evaluation workflow {
+  "correlation_id": "40eda779-5eef-484b-a3a1-caa8a6a73a22",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-1: Evaluation Workflow Initiation (HTTP) > should actually insert workflow into database when POST /evaluate/:journey_id
+01:03:08 [[32minfo[39m]: Creating evaluation workflow {
+  "correlation_id": "40eda779-5eef-484b-a3a1-caa8a6a73a22",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-1: Evaluation Workflow Initiation (HTTP) > should actually insert workflow into database when POST /evaluate/:journey_id
+01:03:08 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "40eda779-5eef-484b-a3a1-caa8a6a73a22",
+  "workflow_id": "15119800-a821-4661-88b4-36b61048a61c",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:03:08 [[32minfo[39m]: Evaluation workflow initiated successfully {
+  "correlation_id": "40eda779-5eef-484b-a3a1-caa8a6a73a22",
+  "workflow_id": "15119800-a821-4661-88b4-36b61048a61c",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-5: Status Retrieval (HTTP) > should return workflow status with all step statuses when GET /status/:journey_id
+01:03:08 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "40eda779-5eef-484b-a3a1-caa8a6a73a22",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17",
+  "url": "http://localhost:3002/eligibility/3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-5: Status Retrieval (HTTP) > should return workflow status with all step statuses when GET /status/:journey_id
+01:03:08 [[31merror[39m]: Eligibility check error {
+  "correlation_id": "40eda779-5eef-484b-a3a1-caa8a6a73a22",
+  "error": "connect ECONNREFUSED 127.0.0.1:3002"
+}
+01:03:08 [[31merror[39m]: Eligibility check error {
+  "correlation_id": "40eda779-5eef-484b-a3a1-caa8a6a73a22",
+  "error": "connect ECONNREFUSED 127.0.0.1:3002"
+}
+01:03:08 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "40eda779-5eef-484b-a3a1-caa8a6a73a22",
+  "workflow_id": "15119800-a821-4661-88b4-36b61048a61c",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-5: Status Retrieval (HTTP) > should return workflow status with all step statuses when GET /status/:journey_id
+01:03:08 [[32minfo[39m]: Updating workflow step {
+  "correlation_id": "40eda779-5eef-484b-a3a1-caa8a6a73a22",
+  "step_id": "aaf1322e-f341-480d-9fed-d2bf41f0051f",
+  "status": "FAILED"
+}
+01:03:08 [[32minfo[39m]: Updating workflow status {
+  "correlation_id": "40eda779-5eef-484b-a3a1-caa8a6a73a22",
+  "workflow_id": "15119800-a821-4661-88b4-36b61048a61c",
+  "status": "PARTIAL_SUCCESS"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-5: Status Retrieval (HTTP) > should return workflow status with all step statuses when GET /status/:journey_id
+01:03:08 [[32minfo[39m]: Workflow status retrieved {
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "IN_PROGRESS"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-5: Status Retrieval (HTTP) > should include timestamps for each step in status response
+01:03:08 [[32minfo[39m]: Workflow status retrieved {
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "IN_PROGRESS"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-5: Status Retrieval (HTTP) > should include eligibility_result in status response when available
+01:03:08 [[32minfo[39m]: Workflow status retrieved {
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17",
+  "workflow_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "IN_PROGRESS"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-5: Status Retrieval (HTTP) > should return 404 when journey_id not found in workflows
+01:03:08 [[32minfo[39m]: Workflow not found for journey {
+  "journey_id": "00000000-0000-0000-0000-000000000000"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-6: Observability Requirements (HTTP) > should include correlation_id in response headers for tracing
+01:03:08 [[32minfo[39m]: Initiating evaluation workflow {
+  "correlation_id": "57a2e956-69e1-4c6a-a8af-6062505aa3a1",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+01:03:08 [[32minfo[39m]: Creating evaluation workflow {
+  "correlation_id": "57a2e956-69e1-4c6a-a8af-6062505aa3a1",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-6: Observability Requirements (HTTP) > should include correlation_id in response headers for tracing
+01:03:08 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "57a2e956-69e1-4c6a-a8af-6062505aa3a1",
+  "workflow_id": "bada0467-cc08-4b00-a929-2cc6555f8296",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:03:08 [[32minfo[39m]: Evaluation workflow initiated successfully {
+  "correlation_id": "57a2e956-69e1-4c6a-a8af-6062505aa3a1",
+  "workflow_id": "bada0467-cc08-4b00-a929-2cc6555f8296",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-6: Observability Requirements (HTTP) > should propagate correlation_id from request header to response
+01:03:08 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "57a2e956-69e1-4c6a-a8af-6062505aa3a1",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17",
+  "url": "http://localhost:3002/eligibility/3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+01:03:08 [[31merror[39m]: Eligibility check error {
+  "correlation_id": "57a2e956-69e1-4c6a-a8af-6062505aa3a1",
+  "error": "connect ECONNREFUSED 127.0.0.1:3002"
+}
+01:03:08 [[31merror[39m]: Eligibility check error {
+  "correlation_id": "57a2e956-69e1-4c6a-a8af-6062505aa3a1",
+  "error": "connect ECONNREFUSED 127.0.0.1:3002"
+}
+01:03:08 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "57a2e956-69e1-4c6a-a8af-6062505aa3a1",
+  "workflow_id": "bada0467-cc08-4b00-a929-2cc6555f8296",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-6: Observability Requirements (HTTP) > should propagate correlation_id from request header to response
+01:03:08 [[31merror[39m]: Eligibility check failed {
+  "correlation_id": "57a2e956-69e1-4c6a-a8af-6062505aa3a1",
+  "error": "insert or update on table \"workflow_steps\" violates foreign key constraint \"workflow_steps_workflow_id_fkey\""
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-6: Observability Requirements (HTTP) > should propagate correlation_id from request header to response
+01:03:08 [[32minfo[39m]: Initiating evaluation workflow {
+  "correlation_id": "3376b579-3da6-4737-8beb-4b7be07d83aa",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-6: Observability Requirements (HTTP) > should propagate correlation_id from request header to response
+01:03:08 [[32minfo[39m]: Creating evaluation workflow {
+  "correlation_id": "3376b579-3da6-4737-8beb-4b7be07d83aa",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-6: Observability Requirements (HTTP) > should propagate correlation_id from request header to response
+01:03:08 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "3376b579-3da6-4737-8beb-4b7be07d83aa",
+  "workflow_id": "1652241a-38f9-47a9-8f20-017da5018e4e",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:03:08 [[32minfo[39m]: Evaluation workflow initiated successfully {
+  "correlation_id": "3376b579-3da6-4737-8beb-4b7be07d83aa",
+  "workflow_id": "1652241a-38f9-47a9-8f20-017da5018e4e",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-6: Observability Requirements (HTTP) > should increment HTTP request counter metric for each request
+01:03:08 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "3376b579-3da6-4737-8beb-4b7be07d83aa",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17",
+  "url": "http://localhost:3002/eligibility/3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-6: Observability Requirements (HTTP) > should increment HTTP request counter metric for each request
+01:03:08 [[31merror[39m]: Eligibility check error {
+  "correlation_id": "3376b579-3da6-4737-8beb-4b7be07d83aa",
+  "error": "connect ECONNREFUSED 127.0.0.1:3002"
+}
+01:03:08 [[31merror[39m]: Eligibility check error {
+  "correlation_id": "3376b579-3da6-4737-8beb-4b7be07d83aa",
+  "error": "connect ECONNREFUSED 127.0.0.1:3002"
+}
+01:03:08 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "3376b579-3da6-4737-8beb-4b7be07d83aa",
+  "workflow_id": "1652241a-38f9-47a9-8f20-017da5018e4e",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-6: Observability Requirements (HTTP) > should increment HTTP request counter metric for each request
+01:03:08 [[32minfo[39m]: Updating workflow step {
+  "correlation_id": "3376b579-3da6-4737-8beb-4b7be07d83aa",
+  "step_id": "79b90a6f-000a-4288-9e64-ff538213ef88",
+  "status": "FAILED"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-6: Observability Requirements (HTTP) > should increment HTTP request counter metric for each request
+01:03:08 [[32minfo[39m]: Updating workflow status {
+  "correlation_id": "3376b579-3da6-4737-8beb-4b7be07d83aa",
+  "workflow_id": "1652241a-38f9-47a9-8f20-017da5018e4e",
+  "status": "PARTIAL_SUCCESS"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-6: Observability Requirements (HTTP) > should increment HTTP request counter metric for each request
+01:03:08 [[32minfo[39m]: Initiating evaluation workflow {
+  "correlation_id": "5479684a-b9f3-4f9c-b89f-41e400266513",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-6: Observability Requirements (HTTP) > should increment HTTP request counter metric for each request
+01:03:08 [[32minfo[39m]: Creating evaluation workflow {
+  "correlation_id": "5479684a-b9f3-4f9c-b89f-41e400266513",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-6: Observability Requirements (HTTP) > should increment HTTP request counter metric for each request
+01:03:08 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "5479684a-b9f3-4f9c-b89f-41e400266513",
+  "workflow_id": "fa9b49fd-f9aa-4651-a6fe-7a0f88eabd2c",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:03:08 [[32minfo[39m]: Evaluation workflow initiated successfully {
+  "correlation_id": "5479684a-b9f3-4f9c-b89f-41e400266513",
+  "workflow_id": "fa9b49fd-f9aa-4651-a6fe-7a0f88eabd2c",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-7: Error Handling (HTTP) > should return 500 Internal Server Error when database unavailable
+01:03:08 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "5479684a-b9f3-4f9c-b89f-41e400266513",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17",
+  "url": "http://localhost:3002/eligibility/3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+01:03:08 [[31merror[39m]: Eligibility check error {
+  "correlation_id": "5479684a-b9f3-4f9c-b89f-41e400266513",
+  "error": "connect ECONNREFUSED 127.0.0.1:3002"
+}
+01:03:08 [[31merror[39m]: Eligibility check error {
+  "correlation_id": "5479684a-b9f3-4f9c-b89f-41e400266513",
+  "error": "connect ECONNREFUSED 127.0.0.1:3002"
+}
+01:03:08 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "5479684a-b9f3-4f9c-b89f-41e400266513",
+  "workflow_id": "fa9b49fd-f9aa-4651-a6fe-7a0f88eabd2c",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-7: Error Handling (HTTP) > should return 500 Internal Server Error when database unavailable
+01:03:08 [[31merror[39m]: Eligibility check failed {
+  "correlation_id": "5479684a-b9f3-4f9c-b89f-41e400266513",
+  "error": "insert or update on table \"workflow_steps\" violates foreign key constraint \"workflow_steps_workflow_id_fkey\""
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-7: Error Handling (HTTP) > should return 500 Internal Server Error when database unavailable
+01:03:08 [[32minfo[39m]: Initiating evaluation workflow {
+  "correlation_id": "05601f23-80b9-4284-9db0-7d663c5e936a",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Full Workflow Integration > should create workflow, eligibility step, and outbox event for eligible journey (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Creating evaluation workflow {
+  "correlation_id": "1ce34806-3584-4a05-a038-ea0d458bca80",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Full Workflow Integration > should create workflow, eligibility step, and outbox event for eligible journey (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "c542b2ca-9b91-4967-9716-67f9f720d68c",
+  "workflow_id": "1cce0a42-e295-42b0-b14b-f33dbd39137c",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Full Workflow Integration > should create workflow, eligibility step, and outbox event for eligible journey (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Updating workflow step {
+  "correlation_id": "c542b2ca-9b91-4967-9716-67f9f720d68c",
+  "step_id": "5e74ac50-1f47-4cdb-b539-be55218eeed0",
+  "status": "COMPLETED"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Full Workflow Integration > should create workflow, eligibility step, and outbox event for eligible journey (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "c542b2ca-9b91-4967-9716-67f9f720d68c",
+  "workflow_id": "1cce0a42-e295-42b0-b14b-f33dbd39137c",
+  "step_type": "CLAIM_CREATION"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Full Workflow Integration > should create workflow, eligibility step, and outbox event for eligible journey (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Updating workflow status {
+  "correlation_id": "c542b2ca-9b91-4967-9716-67f9f720d68c",
+  "workflow_id": "1cce0a42-e295-42b0-b14b-f33dbd39137c",
+  "status": "IN_PROGRESS"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Full Workflow Integration > should create workflow, eligibility step, and outbox event for eligible journey (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Creating outbox event {
+  "correlation_id": "c542b2ca-9b91-4967-9716-67f9f720d68c",
+  "event_type": "CLAIM_SUBMISSION_REQUESTED"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Full Workflow Integration > should NOT create outbox event when journey is ineligible (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Creating evaluation workflow {
+  "correlation_id": "081dae19-b973-4ef0-9c71-c9aef8e380d0",
+  "journey_id": "3ae192ac-1ce3-419e-a3a4-3ea6f5062207"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Full Workflow Integration > should NOT create outbox event when journey is ineligible (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "735d13c6-cc30-465d-a2c8-764f94332685",
+  "workflow_id": "41f2cb70-cf08-4a5d-92ba-099a78b641ba",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Full Workflow Integration > should NOT create outbox event when journey is ineligible (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Updating workflow step {
+  "correlation_id": "735d13c6-cc30-465d-a2c8-764f94332685",
+  "step_id": "550fa8b9-dd7c-4440-9dbd-cf11c5b0db91",
+  "status": "COMPLETED"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Full Workflow Integration > should NOT create outbox event when journey is ineligible (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Updating workflow status {
+  "correlation_id": "735d13c6-cc30-465d-a2c8-764f94332685",
+  "workflow_id": "41f2cb70-cf08-4a5d-92ba-099a78b641ba",
+  "status": "COMPLETED"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Full Workflow Integration > should update updated_at timestamp when workflow status changes (real trigger test)
+01:03:09 [[32minfo[39m]: Creating evaluation workflow {
+  "correlation_id": "fa3c6216-6ef6-4130-bae4-17305d82017a",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Full Workflow Integration > should update updated_at timestamp when workflow status changes (real trigger test)
+01:03:09 [[32minfo[39m]: Updating workflow status {
+  "correlation_id": "f8d868a3-0f8b-4cab-be5d-9e6ee88fb854",
+  "workflow_id": "be3fe8d6-c027-4985-b985-0b1d7365eb95",
+  "status": "IN_PROGRESS"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Full Workflow Integration > should cascade delete workflow_steps when workflow deleted (real cascade test)
+01:03:09 [[32minfo[39m]: Creating evaluation workflow {
+  "correlation_id": "de4044f4-7763-43d2-9418-d8a991361360",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Full Workflow Integration > should cascade delete workflow_steps when workflow deleted (real cascade test)
+01:03:09 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "3c37ad40-25c7-48c8-b791-8baf85e268c9",
+  "workflow_id": "678a223b-d789-47ed-977c-1a427a6a505b",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Full Workflow Integration > should cascade delete workflow_steps when workflow deleted (real cascade test)
+01:03:09 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "91aa11d9-35ee-488a-a054-2d6dff9940d0",
+  "workflow_id": "678a223b-d789-47ed-977c-1a427a6a505b",
+  "step_type": "CLAIM_CREATION"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Concurrent Workflow Handling > should handle multiple concurrent workflow initiations without conflicts (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Creating evaluation workflow {
+  "correlation_id": "e06bc647-32d0-45ba-a1fe-96f3f421176f",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Concurrent Workflow Handling > should handle multiple concurrent workflow initiations without conflicts (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Creating evaluation workflow {
+  "correlation_id": "3cbbdb56-51ab-4921-b1a7-35e9c9e48d7c",
+  "journey_id": "3ae192ac-1ce3-419e-a3a4-3ea6f5062207"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Concurrent Workflow Handling > should prevent duplicate workflows for same journey_id (business logic test - WILL FAIL)
+01:03:09 [[32minfo[39m]: Creating evaluation workflow {
+  "correlation_id": "e7061f5a-a04c-488e-b018-0f0f574ea8cf",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Outbox Pattern Verification > should create unpublished outbox event with correct structure (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Creating evaluation workflow {
+  "correlation_id": "dce8d969-7b9c-4a41-8c78-05ad3db4f712",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Outbox Pattern Verification > should create unpublished outbox event with correct structure (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "40029f7d-4be4-49b5-bb06-8d992858e57d",
+  "workflow_id": "baf5cdad-614d-44c5-b2cd-6144d71a1125",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Outbox Pattern Verification > should create unpublished outbox event with correct structure (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Updating workflow step {
+  "correlation_id": "40029f7d-4be4-49b5-bb06-8d992858e57d",
+  "step_id": "58677f07-055d-4112-ab5b-06ea6d0646d0",
+  "status": "COMPLETED"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Outbox Pattern Verification > should create unpublished outbox event with correct structure (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "40029f7d-4be4-49b5-bb06-8d992858e57d",
+  "workflow_id": "baf5cdad-614d-44c5-b2cd-6144d71a1125",
+  "step_type": "CLAIM_CREATION"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Outbox Pattern Verification > should create unpublished outbox event with correct structure (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Updating workflow status {
+  "correlation_id": "40029f7d-4be4-49b5-bb06-8d992858e57d",
+  "workflow_id": "baf5cdad-614d-44c5-b2cd-6144d71a1125",
+  "status": "IN_PROGRESS"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Outbox Pattern Verification > should create unpublished outbox event with correct structure (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Creating outbox event {
+  "correlation_id": "40029f7d-4be4-49b5-bb06-8d992858e57d",
+  "event_type": "CLAIM_SUBMISSION_REQUESTED"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Outbox Pattern Verification > should query unpublished events efficiently using partial index (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Creating evaluation workflow {
+  "correlation_id": "980fad06-748d-45c8-b0ee-0a4567173dff",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Outbox Pattern Verification > should query unpublished events efficiently using partial index (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "d6bb3cd8-c780-44a8-84b1-be96e2ff4ac0",
+  "workflow_id": "588d7fcd-4ab6-466a-9f7c-cd68be40b6c9",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Outbox Pattern Verification > should query unpublished events efficiently using partial index (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Updating workflow step {
+  "correlation_id": "d6bb3cd8-c780-44a8-84b1-be96e2ff4ac0",
+  "step_id": "f837b85d-cc68-4813-9ea5-01d9b8b1a013",
+  "status": "COMPLETED"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Outbox Pattern Verification > should query unpublished events efficiently using partial index (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "d6bb3cd8-c780-44a8-84b1-be96e2ff4ac0",
+  "workflow_id": "588d7fcd-4ab6-466a-9f7c-cd68be40b6c9",
+  "step_type": "CLAIM_CREATION"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Outbox Pattern Verification > should query unpublished events efficiently using partial index (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Updating workflow status {
+  "correlation_id": "d6bb3cd8-c780-44a8-84b1-be96e2ff4ac0",
+  "workflow_id": "588d7fcd-4ab6-466a-9f7c-cd68be40b6c9",
+  "status": "IN_PROGRESS"
+}
+
+stdout | tests/integration/evaluation-workflow-integration.test.ts > Evaluation Coordinator - Integration Tests > Outbox Pattern Verification > should query unpublished events efficiently using partial index (WILL FAIL - no implementation)
+01:03:09 [[32minfo[39m]: Creating outbox event {
+  "correlation_id": "d6bb3cd8-c780-44a8-84b1-be96e2ff4ac0",
+  "event_type": "CLAIM_SUBMISSION_REQUESTED"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-7: Error Handling (HTTP) > should return 500 Internal Server Error when database unavailable
+01:03:09 [[31merror[39m]: Failed to initiate evaluation workflow {
+  "correlation_id": "05601f23-80b9-4284-9db0-7d663c5e936a",
+  "error": "Connection terminated due to connection timeout"
+}
+01:03:09 [[31merror[39m]: Failed to initiate evaluation workflow {
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17",
+  "error": "Connection terminated due to connection timeout"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-7: Error Handling (HTTP) > should return 422 Unprocessable Entity when journey already has active workflow
+01:03:09 [[32minfo[39m]: Initiating evaluation workflow {
+  "correlation_id": "98269373-6f4d-4cd7-b938-851f916eda7c",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+01:03:09 [[32minfo[39m]: Creating evaluation workflow {
+  "correlation_id": "98269373-6f4d-4cd7-b938-851f916eda7c",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-7: Error Handling (HTTP) > should return 422 Unprocessable Entity when journey already has active workflow
+01:03:09 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "98269373-6f4d-4cd7-b938-851f916eda7c",
+  "workflow_id": "c6eba70b-2839-4153-92c8-2ebbcaa1e05b",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:03:09 [[32minfo[39m]: Evaluation workflow initiated successfully {
+  "correlation_id": "98269373-6f4d-4cd7-b938-851f916eda7c",
+  "workflow_id": "c6eba70b-2839-4153-92c8-2ebbcaa1e05b",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-7: Error Handling (HTTP) > should return 422 Unprocessable Entity when journey already has active workflow
+01:03:09 [[32minfo[39m]: Initiating evaluation workflow {
+  "correlation_id": "156ff3a6-9f2d-47b4-9078-76e6185f318e",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-7: Error Handling (HTTP) > should return 422 Unprocessable Entity when journey already has active workflow
+01:03:09 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "98269373-6f4d-4cd7-b938-851f916eda7c",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17",
+  "url": "http://localhost:3002/eligibility/3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-7: Error Handling (HTTP) > should return 422 Unprocessable Entity when journey already has active workflow
+01:03:09 [[31merror[39m]: Eligibility check error {
+  "correlation_id": "98269373-6f4d-4cd7-b938-851f916eda7c",
+  "error": "connect ECONNREFUSED 127.0.0.1:3002"
+}
+01:03:09 [[31merror[39m]: Eligibility check error {
+  "correlation_id": "98269373-6f4d-4cd7-b938-851f916eda7c",
+  "error": "connect ECONNREFUSED 127.0.0.1:3002"
+}
+01:03:09 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "98269373-6f4d-4cd7-b938-851f916eda7c",
+  "workflow_id": "c6eba70b-2839-4153-92c8-2ebbcaa1e05b",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-7: Error Handling (HTTP) > should return 422 Unprocessable Entity when journey already has active workflow
+01:03:09 [[32minfo[39m]: Updating workflow step {
+  "correlation_id": "98269373-6f4d-4cd7-b938-851f916eda7c",
+  "step_id": "bfd8b423-eafe-498d-a19a-8127c1719b61",
+  "status": "FAILED"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-7: Error Handling (HTTP) > should return 422 Unprocessable Entity when journey already has active workflow
+01:03:09 [[32minfo[39m]: Updating workflow status {
+  "correlation_id": "98269373-6f4d-4cd7-b938-851f916eda7c",
+  "workflow_id": "c6eba70b-2839-4153-92c8-2ebbcaa1e05b",
+  "status": "PARTIAL_SUCCESS"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-7: Error Handling (HTTP) > should return 422 Unprocessable Entity when journey already has active workflow
+01:03:09 [[32minfo[39m]: Creating evaluation workflow {
+  "correlation_id": "156ff3a6-9f2d-47b4-9078-76e6185f318e",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-7: Error Handling (HTTP) > should return 422 Unprocessable Entity when journey already has active workflow
+01:03:09 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "156ff3a6-9f2d-47b4-9078-76e6185f318e",
+  "workflow_id": "9432071d-9593-4302-9ee2-b5de6b0ac6b1",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:03:09 [[32minfo[39m]: Evaluation workflow initiated successfully {
+  "correlation_id": "156ff3a6-9f2d-47b4-9078-76e6185f318e",
+  "workflow_id": "9432071d-9593-4302-9ee2-b5de6b0ac6b1",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests
+01:03:09 [[32minfo[39m]: Calling eligibility engine API {
+  "correlation_id": "156ff3a6-9f2d-47b4-9078-76e6185f318e",
+  "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17",
+  "url": "http://localhost:3002/eligibility/3673a8d5-b0c1-4527-955d-b6a9c5870a17"
+}
+
+stdout | tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests
+01:03:09 [[31merror[39m]: Eligibility check error {
+  "correlation_id": "156ff3a6-9f2d-47b4-9078-76e6185f318e",
+  "error": "connect ECONNREFUSED 127.0.0.1:3002"
+}
+01:03:09 [[31merror[39m]: Eligibility check error {
+  "correlation_id": "156ff3a6-9f2d-47b4-9078-76e6185f318e",
+  "error": "connect ECONNREFUSED 127.0.0.1:3002"
+}
+01:03:09 [[32minfo[39m]: Creating workflow step {
+  "correlation_id": "156ff3a6-9f2d-47b4-9078-76e6185f318e",
+  "workflow_id": "9432071d-9593-4302-9ee2-b5de6b0ac6b1",
+  "step_type": "ELIGIBILITY_CHECK"
+}
+01:03:09 [[31merror[39m]: Eligibility check failed {
+  "correlation_id": "156ff3a6-9f2d-47b4-9078-76e6185f318e",
+  "error": "Cannot use a pool after calling end on the pool"
+}
+
+ ✓ tests/integration/evaluation-workflow-integration.test.ts  (10 tests) 15459ms
+ ❯ tests/integration/evaluation-workflow-http-integration.test.ts  (12 tests | 1 failed) 11018ms
+   ❯ tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-7: Error Handling (HTTP) > should return 422 Unprocessable Entity when journey already has active workflow
+     → expected 202 to be 422 // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/evaluation-workflow-http-integration.test.ts > Evaluation Coordinator - HTTP Integration Tests > AC-7: Error Handling (HTTP) > should return 422 Unprocessable Entity when journey already has active workflow
+AssertionError: expected 202 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 202
+
+ ❯ tests/integration/evaluation-workflow-http-integration.test.ts:307:31
+    305| 
+    306|       // Assert
+    307|       expect(response.status).toBe(422);
+       |                               ^
+    308|       expect(response.body.error).toMatch(/Active workflow already exi…
+    309|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+ Test Files  1 failed | 5 passed (6)
+      Tests  1 failed | 74 passed (75)
+   Start at  01:02:43
+   Duration  34.04s (transform 1.98s, setup 0ms, collect 41.04s, tests 49.19s, environment 1ms, prepare 8.34s)
+

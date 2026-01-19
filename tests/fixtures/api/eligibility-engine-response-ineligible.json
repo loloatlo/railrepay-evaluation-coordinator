@@ -1,0 +1,15 @@
+{
+  "_fixtureMetadata": {
+    "source": "Mock eligibility-engine API response",
+    "description": "Eligibility check response indicating passenger is not eligible for compensation",
+    "sampledAt": "2026-01-18"
+  },
+  "eligible": false,
+  "reason": "DELAY_BELOW_THRESHOLD",
+  "delay_minutes": 10,
+  "details": {
+    "delay_attribution": "TRAIN_OPERATOR",
+    "toc_code": "GW",
+    "service_rid": "202601181234568"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "_fixtureMetadata": {
+    "source": "journey_matcher.journeys",
+    "query": "SELECT id, user_id, origin_crs, destination_crs FROM journey_matcher.journeys LIMIT 5",
+    "sampledAt": "2026-01-18",
+    "description": "Real journey IDs for testing evaluation workflow initiation"
+  },
+  "validJourneys": [
+    {
+      "journey_id": "3673a8d5-b0c1-4527-955d-b6a9c5870a17",
+      "user_id": "user_smoke_test",
+      "origin_crs": "LON",
+      "destination_crs": "YOR"
+    },
+    {
+      "journey_id": "3ae192ac-1ce3-419e-a3a4-3ea6f5062207",
+      "user_id": "test_user_123",
+      "origin_crs": "PAD",
+      "destination_crs": "ABG"
+    }
+  ]
+}

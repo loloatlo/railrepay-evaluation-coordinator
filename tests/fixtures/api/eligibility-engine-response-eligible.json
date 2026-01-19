@@ -1,0 +1,16 @@
+{
+  "_fixtureMetadata": {
+    "source": "Mock eligibility-engine API response",
+    "description": "Successful eligibility check response indicating passenger is eligible for compensation",
+    "sampledAt": "2026-01-18"
+  },
+  "eligible": true,
+  "reason": "DELAY_THRESHOLD_MET",
+  "compensation_amount_gbp": 25.50,
+  "delay_minutes": 45,
+  "details": {
+    "delay_attribution": "TRAIN_OPERATOR",
+    "toc_code": "GW",
+    "service_rid": "202601181234567"
+  }
+}

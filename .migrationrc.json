@@ -1,0 +1,8 @@
+{
+  "databaseUrl": "${DATABASE_URL}",
+  "migrationsTable": "pgmigrations",
+  "dir": "migrations",
+  "schema": "evaluation_coordinator",
+  "createSchema": true,
+  "tsconfig": "./tsconfig.json"
+}
