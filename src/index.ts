@@ -487,7 +487,7 @@ if (process.env.NODE_ENV !== 'test') {
 
         eventConsumer = new EventConsumer({
           ...consumerConfig,
-          db: dbClient.pool || dbClient,
+          db: dbClient,
           logger: consumerLogger,
         });
 
