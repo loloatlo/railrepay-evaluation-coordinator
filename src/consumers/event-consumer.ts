@@ -12,6 +12,7 @@ import { KafkaConsumer } from '@railrepay/kafka-client';
 import { DelayDetectedHandler } from '../kafka/delay-detected-handler.js';
 import { DelayNotDetectedHandler } from '../kafka/delay-not-detected-handler.js';
 import { WorkflowRepository } from '../repositories/workflow-repository.js';
+import { EligibilityClient } from '../services/eligibility-client.js';
 
 /**
  * Logger interface for dependency injection
@@ -124,10 +125,12 @@ export class EventConsumer {
 
     // Create handler dependencies
     const workflowRepository = new WorkflowRepository(this.db);
+    const eligibilityClient = new EligibilityClient();
 
     // Create handlers
     this.delayDetectedHandler = new DelayDetectedHandler({
       workflowRepository,
+      eligibilityClient,
       logger: this.logger,
     });
 

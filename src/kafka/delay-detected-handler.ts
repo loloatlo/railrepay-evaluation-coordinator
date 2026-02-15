@@ -12,6 +12,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { WorkflowRepository } from '../repositories/workflow-repository.js';
+import type { EligibilityClient } from '../services/eligibility-client.js';
 
 /**
  * Logger interface
@@ -31,6 +32,7 @@ export interface DelayDetectedPayload {
   user_id: string;
   delay_minutes: number;
   is_cancellation: boolean;
+  toc_code?: string; // AC-2: Optional for backward compatibility
   correlation_id?: string; // Optional in payload
 }
 
@@ -39,6 +41,7 @@ export interface DelayDetectedPayload {
  */
 interface DelayDetectedHandlerDeps {
   workflowRepository: WorkflowRepository;
+  eligibilityClient: EligibilityClient; // AC-3: NEW dependency
   logger: Logger;
 }
 
@@ -49,10 +52,12 @@ export class DelayDetectedHandler {
   readonly topic = 'delay.detected';
 
   private workflowRepository: WorkflowRepository;
+  private eligibilityClient: EligibilityClient;
   private logger: Logger;
 
   constructor(deps: DelayDetectedHandlerDeps) {
     this.workflowRepository = deps.workflowRepository;
+    this.eligibilityClient = deps.eligibilityClient;
     this.logger = deps.logger;
   }
 
@@ -109,6 +114,142 @@ export class DelayDetectedHandler {
         delay_minutes: typedPayload.delay_minutes,
         is_cancellation: typedPayload.is_cancellation,
       });
+
+      // AC-9: Check for toc_code - if missing, fail workflow
+      if (!typedPayload.toc_code) {
+        this.logger.warn('toc_code missing from delay.detected payload, failing workflow', {
+          correlation_id: correlationId,
+          journey_id: typedPayload.journey_id,
+          workflow_id: workflow.id,
+        });
+
+        // Create workflow step for ELIGIBILITY_CHECK with FAILED status
+        const step = await this.workflowRepository.createWorkflowStep(
+          workflow.id,
+          'ELIGIBILITY_CHECK',
+          correlationId,
+          'FAILED'
+        );
+
+        // Update step with error details (if step was created successfully)
+        if (step && step.id) {
+          await this.workflowRepository.updateWorkflowStep(
+            step.id,
+            'FAILED',
+            correlationId,
+            null,
+            {
+              message: 'missing_toc_code',
+              reason: 'toc_code is required for eligibility evaluation but was not present in delay.detected payload'
+            }
+          );
+        }
+
+        // Update workflow status to FAILED
+        await this.workflowRepository.updateWorkflowStatus(workflow.id, 'FAILED', correlationId);
+        return;
+      }
+
+      // AC-3: Trigger eligibility evaluation
+      try {
+        const eligibilityResult = await this.eligibilityClient.evaluate(
+          {
+            journey_id: typedPayload.journey_id,
+            toc_code: typedPayload.toc_code,
+            delay_minutes: typedPayload.delay_minutes,
+            ticket_fare_pence: 0 // AC-12: Default to 0
+          },
+          correlationId
+        );
+
+        // AC-4: Store eligibility result and update status to COMPLETED
+        await this.workflowRepository.updateWorkflowEligibilityResult(
+          workflow.id,
+          eligibilityResult,
+          correlationId
+        );
+
+        await this.workflowRepository.updateWorkflowStatus(
+          workflow.id,
+          'COMPLETED',
+          correlationId
+        );
+
+        // AC-6: Write outbox event with evaluation result
+        await this.workflowRepository.createOutboxEvent(
+          workflow.id,
+          'EVALUATION_WORKFLOW',
+          'evaluation.completed',
+          {
+            journey_id: typedPayload.journey_id,
+            user_id: typedPayload.user_id,
+            eligible: eligibilityResult.eligible,
+            scheme: eligibilityResult.scheme,
+            compensation_pence: eligibilityResult.compensation_pence,
+            correlation_id: correlationId
+          },
+          correlationId
+        );
+
+        this.logger.info('Eligibility evaluation completed successfully', {
+          correlation_id: correlationId,
+          journey_id: typedPayload.journey_id,
+          workflow_id: workflow.id,
+          eligible: eligibilityResult.eligible,
+          scheme: eligibilityResult.scheme
+        });
+
+      } catch (evalError) {
+        // AC-8: Handle eligibility-engine errors
+        this.logger.error('Eligibility evaluation failed', {
+          correlation_id: correlationId,
+          journey_id: typedPayload.journey_id,
+          workflow_id: workflow.id,
+          error: evalError instanceof Error ? evalError.message : String(evalError),
+        });
+
+        // Create workflow step for ELIGIBILITY_CHECK with FAILED status
+        const step = await this.workflowRepository.createWorkflowStep(
+          workflow.id,
+          'ELIGIBILITY_CHECK',
+          correlationId,
+          'FAILED'
+        );
+
+        // Determine error details based on error type
+        let errorDetails: any = {
+          message: evalError instanceof Error ? evalError.message : String(evalError)
+        };
+
+        if (evalError instanceof Error) {
+          if (evalError.message === 'TIMEOUT') {
+            errorDetails = {
+              message: 'TIMEOUT',
+              timeout_ms: 30000
+            };
+          } else if ((evalError as any).status) {
+            errorDetails = {
+              message: evalError.message,
+              http_status: (evalError as any).status,
+              response: (evalError as any).data
+            };
+          }
+        }
+
+        // Update step with error details (if step was created successfully)
+        if (step && step.id) {
+          await this.workflowRepository.updateWorkflowStep(
+            step.id,
+            'FAILED',
+            correlationId,
+            null,
+            errorDetails
+          );
+        }
+
+        // Update workflow status to FAILED
+        await this.workflowRepository.updateWorkflowStatus(workflow.id, 'FAILED', correlationId);
+      }
     } catch (error) {
       // AC-9: Log errors with winston-logger
       this.logger.error('Failed to create evaluation workflow for delay.detected', {

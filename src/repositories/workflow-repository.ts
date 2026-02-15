@@ -103,7 +103,7 @@ export class WorkflowRepository {
 
   async updateWorkflowEligibilityResult(
     workflowId: string,
-    eligibilityResult: { eligible: boolean; reason: string },
+    eligibilityResult: any,
     correlationId: string
   ): Promise<void> {
     const query = `
@@ -119,6 +119,71 @@ export class WorkflowRepository {
     });
 
     await this.db.query(query, [eligibilityResult, workflowId]);
+  }
+
+  /**
+   * AC-6: Transactional method to atomically complete workflow and write outbox event
+   * This ensures ADR-007 compliance (transactional outbox pattern)
+   */
+  async completeWorkflowWithOutbox(
+    workflowId: string,
+    eligibilityResult: any,
+    outboxPayload: {
+      journey_id: string;
+      user_id: string;
+      eligible: boolean;
+      scheme: string;
+      compensation_pence: number;
+      correlation_id: string;
+    },
+    correlationId: string
+  ): Promise<void> {
+    logger.info('Completing workflow with transactional outbox', {
+      correlation_id: correlationId,
+      workflow_id: workflowId
+    });
+
+    // Use database transaction to ensure atomicity
+    await this.db.transaction(async (txClient: any) => {
+      // Update eligibility_result
+      const updateEligibilityQuery = `
+        UPDATE evaluation_coordinator.evaluation_workflows
+        SET eligibility_result = $1, updated_at = NOW()
+        WHERE id = $2
+      `;
+      await txClient.query(updateEligibilityQuery, [eligibilityResult, workflowId]);
+
+      // Update status to COMPLETED
+      const updateStatusQuery = `
+        UPDATE evaluation_coordinator.evaluation_workflows
+        SET status = $1, updated_at = NOW()
+        WHERE id = $2
+      `;
+      await txClient.query(updateStatusQuery, ['COMPLETED', workflowId]);
+
+      // Create outbox event
+      const outboxId = uuidv4();
+      const insertOutboxQuery = `
+        INSERT INTO evaluation_coordinator.outbox
+          (id, aggregate_id, aggregate_type, event_type, payload, correlation_id, published, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+        RETURNING *
+      `;
+      await txClient.query(insertOutboxQuery, [
+        outboxId,
+        workflowId,
+        'EVALUATION_WORKFLOW',
+        'evaluation.completed',
+        outboxPayload,
+        correlationId,
+        false // published = false (transactional outbox pattern)
+      ]);
+    });
+
+    logger.info('Workflow completed with transactional outbox', {
+      correlation_id: correlationId,
+      workflow_id: workflowId
+    });
   }
 
   async createWorkflowStep(
