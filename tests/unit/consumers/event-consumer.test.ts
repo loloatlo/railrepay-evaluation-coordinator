@@ -37,8 +37,12 @@ const mockKafkaConsumer = vi.hoisted(() => ({
   }),
 }));
 
+// Export KafkaConsumer constructor mock for test access to constructor calls
+// Use vi.hoisted() to ensure it's available during mock hoisting
+const mockKafkaConsumerConstructor = vi.hoisted(() => vi.fn(() => mockKafkaConsumer));
+
 vi.mock('@railrepay/kafka-client', () => ({
-  KafkaConsumer: vi.fn(() => mockKafkaConsumer),
+  KafkaConsumer: mockKafkaConsumerConstructor,
 }));
 
 // Shared logger mock instance (OUTSIDE factory per guideline #11)
@@ -381,6 +385,92 @@ describe('EventConsumer', () => {
 
       // Should not throw - graceful shutdown
       await expect(consumer.stop()).resolves.not.toThrow();
+    });
+  });
+
+  /**
+   * BL-147: TD-EVAL-COORDINATOR-003 - Distinct GroupIds
+   *
+   * Phase: TD-1 Test Specification (Jessie)
+   * Date: 2026-02-15
+   *
+   * Root Cause: Both KafkaConsumer instances use the SAME groupId,
+   * causing consumer group rebalancing livelock. Consumers compete
+   * for partitions instead of coordinating.
+   *
+   * Fix Approach: Each consumer gets distinct groupId by suffixing
+   * the base groupId with topic name:
+   * - ${baseGroupId}-delay-detected
+   * - ${baseGroupId}-delay-not-detected
+   *
+   * AC-1: Each KafkaConsumer instance uses a distinct groupId
+   * AC-5: Code derives distinct groupIds by suffixing the base groupId
+   */
+  describe('AC-1, AC-5: Distinct consumer groupIds (TD-EVAL-COORDINATOR-003)', () => {
+    // AC-1, AC-5: delay.detected consumer gets -delay-detected suffix
+    it('should create delay.detected consumer with groupId suffix', () => {
+      const consumer = new EventConsumer({
+        serviceName: 'evaluation-coordinator',
+        brokers: ['broker1:9092'],
+        username: 'test-user',
+        password: 'test-pass',
+        groupId: 'evaluation-coordinator-consumer-group',
+        db: mockDb,
+        logger: mockLogger,
+      });
+
+      // Verify first KafkaConsumer call has -delay-detected suffix
+      expect(mockKafkaConsumerConstructor).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          groupId: 'evaluation-coordinator-consumer-group-delay-detected',
+        })
+      );
+    });
+
+    // AC-1, AC-5: delay.not-detected consumer gets -delay-not-detected suffix
+    it('should create delay.not-detected consumer with groupId suffix', () => {
+      const consumer = new EventConsumer({
+        serviceName: 'evaluation-coordinator',
+        brokers: ['broker1:9092'],
+        username: 'test-user',
+        password: 'test-pass',
+        groupId: 'evaluation-coordinator-consumer-group',
+        db: mockDb,
+        logger: mockLogger,
+      });
+
+      // Verify second KafkaConsumer call has -delay-not-detected suffix
+      expect(mockKafkaConsumerConstructor).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          groupId: 'evaluation-coordinator-consumer-group-delay-not-detected',
+        })
+      );
+    });
+
+    // AC-1: The two consumers MUST have different groupIds
+    it('should create two consumers with DIFFERENT groupIds', () => {
+      const consumer = new EventConsumer({
+        serviceName: 'evaluation-coordinator',
+        brokers: ['broker1:9092'],
+        username: 'test-user',
+        password: 'test-pass',
+        groupId: 'evaluation-coordinator-consumer-group',
+        db: mockDb,
+        logger: mockLogger,
+      });
+
+      // Get both constructor call args
+      const firstCallArgs = mockKafkaConsumerConstructor.mock.calls[0][0];
+      const secondCallArgs = mockKafkaConsumerConstructor.mock.calls[1][0];
+
+      // Verify groupIds are NOT the same
+      expect(firstCallArgs.groupId).not.toBe(secondCallArgs.groupId);
+
+      // Verify both are truthy (not undefined/null)
+      expect(firstCallArgs.groupId).toBeTruthy();
+      expect(secondCallArgs.groupId).toBeTruthy();
     });
   });
 });

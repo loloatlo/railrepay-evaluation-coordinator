@@ -108,7 +108,7 @@ export class EventConsumer {
       brokers: config.brokers,
       username: config.username,
       password: config.password,
-      groupId: config.groupId,
+      groupId: `${config.groupId}-delay-detected`,
       logger: config.logger,
       ssl: config.ssl,
     });
@@ -118,7 +118,7 @@ export class EventConsumer {
       brokers: config.brokers,
       username: config.username,
       password: config.password,
-      groupId: config.groupId,
+      groupId: `${config.groupId}-delay-not-detected`,
       logger: config.logger,
       ssl: config.ssl,
     });
