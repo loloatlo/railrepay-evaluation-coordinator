@@ -1,6 +1,6 @@
 /**
  * Evaluation Coordinator Service - Main Entry Point
- * 
+ *
  * Multi-step evaluation workflow orchestration for RailRepay
  */
 
@@ -14,14 +14,16 @@ import { WorkflowService } from './services/workflow-service.js';
 import { EligibilityClient } from './services/eligibility-client.js';
 import { WorkflowRepository } from './repositories/workflow-repository.js';
 import { v4 as uuidv4 } from 'uuid';
-import { 
-  evaluationsStartedCounter, 
-  workflowDurationHistogram, 
-  stepFailuresCounter 
+import {
+  evaluationsStartedCounter,
+  workflowDurationHistogram,
+  stepFailuresCounter
 } from './lib/metrics.js';
 import { createLogger as createWinstonLogger } from '@railrepay/winston-logger';
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
+import { EventConsumer } from './consumers/event-consumer.js';
+import { createConsumerConfig, ConsumerConfigError } from './consumers/config.js';
 
 // Export for tests
 export { WorkflowService };
@@ -451,15 +453,101 @@ export const initiateEvaluationWorkflowWithStepFailure = async (
   }
 };
 
+// Event consumer instance (initialized in start() if Kafka config available)
+let eventConsumer: EventConsumer | null = null;
+let server: ReturnType<typeof app.listen>;
+let dbClient: any;
+
 // Start server if not in test mode
 if (process.env.NODE_ENV !== 'test') {
   const port = process.env.PORT || 3003;
   const app = createApp();
-  
-  app.listen(port, () => {
-    logger.info('Evaluation Coordinator service started', { 
-      port,
-      service: 'evaluation-coordinator'
-    });
-  });
+  dbClient = createDbClient();
+
+  async function start() {
+    try {
+      // Start HTTP server
+      server = app.listen(port, () => {
+        logger.info('Evaluation Coordinator service started', {
+          port,
+          service: 'evaluation-coordinator'
+        });
+      });
+
+      // Start Kafka event consumer (BL-145)
+      // AC-7: Graceful degradation - if Kafka env vars missing or connection fails, continue HTTP-only
+      try {
+        const consumerConfig = createConsumerConfig();
+
+        // Use winston-logger for EventConsumer (AC-9)
+        const consumerLogger = createWinstonLogger({
+          serviceName: 'evaluation-coordinator',
+          level: 'info'
+        });
+
+        eventConsumer = new EventConsumer({
+          ...consumerConfig,
+          db: dbClient.pool || dbClient,
+          logger: consumerLogger,
+        });
+
+        logger.info('Starting Kafka event consumer', {
+          groupId: consumerConfig.groupId,
+          brokers: consumerConfig.brokers,
+        });
+        await eventConsumer.start();
+        logger.info('Kafka event consumer started successfully');
+      } catch (error) {
+        if (error instanceof ConsumerConfigError) {
+          // AC-7: Missing Kafka config - log warning but continue (HTTP-only mode)
+          logger.warn('Kafka consumer not started - missing configuration, running in HTTP-only mode', {
+            error: error.message
+          });
+        } else {
+          // Other errors - log but don't fail startup (graceful degradation)
+          logger.error('Failed to start Kafka consumer, running in HTTP-only mode', {
+            error: error instanceof Error ? error.message : String(error)
+          });
+        }
+      }
+    } catch (error) {
+      logger.error('Failed to start service', {
+        error: error instanceof Error ? error.message : String(error)
+      });
+      process.exit(1);
+    }
+  }
+
+  // Graceful shutdown
+  async function shutdown(signal: string) {
+    logger.info(`${signal} received, shutting down gracefully`);
+
+    // Stop event consumer FIRST (BL-145)
+    if (eventConsumer) {
+      logger.info('Stopping Kafka event consumer');
+      await eventConsumer.stop();
+      logger.info('Kafka event consumer stopped');
+    }
+
+    // Close HTTP server SECOND
+    if (server) {
+      server.close(() => {
+        logger.info('HTTP server closed');
+      });
+    }
+
+    // Close database pool LAST
+    if (dbClient?.pool) {
+      await dbClient.pool.end();
+      logger.info('Database pool closed');
+    }
+
+    process.exit(0);
+  }
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+
+  // Start the service
+  start();
 }

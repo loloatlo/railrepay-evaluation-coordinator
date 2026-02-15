@@ -91,14 +91,34 @@ export class WorkflowRepository {
       SET status = $1, updated_at = NOW()
       WHERE id = $2
     `;
-    
-    logger.info('Updating workflow status', { 
-      correlation_id: correlationId, 
-      workflow_id: workflowId, 
-      status 
+
+    logger.info('Updating workflow status', {
+      correlation_id: correlationId,
+      workflow_id: workflowId,
+      status
     });
 
     await this.db.query(query, [status, workflowId]);
+  }
+
+  async updateWorkflowEligibilityResult(
+    workflowId: string,
+    eligibilityResult: { eligible: boolean; reason: string },
+    correlationId: string
+  ): Promise<void> {
+    const query = `
+      UPDATE evaluation_coordinator.evaluation_workflows
+      SET eligibility_result = $1, updated_at = NOW()
+      WHERE id = $2
+    `;
+
+    logger.info('Updating workflow eligibility result', {
+      correlation_id: correlationId,
+      workflow_id: workflowId,
+      eligibility_result: eligibilityResult
+    });
+
+    await this.db.query(query, [eligibilityResult, workflowId]);
   }
 
   async createWorkflowStep(
