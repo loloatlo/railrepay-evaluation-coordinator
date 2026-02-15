@@ -66,9 +66,15 @@ interface ConsumerStats {
  * AC-1: Subscribes to delay.detected topic
  * AC-2: Subscribes to delay.not-detected topic
  * AC-9: Uses @railrepay/winston-logger
+ *
+ * Implementation note: Uses two separate KafkaConsumer instances
+ * because KafkaConsumer.subscribe() auto-starts the consumer,
+ * preventing multiple subscriptions on a single instance.
+ * Both consumers use the same groupId for coordination.
  */
 export class EventConsumer {
-  private kafkaConsumer: KafkaConsumer;
+  private delayDetectedConsumer: KafkaConsumer;
+  private delayNotDetectedConsumer: KafkaConsumer;
   private db: any;
   private logger: Logger;
   private started: boolean = false;
@@ -93,9 +99,20 @@ export class EventConsumer {
     this.db = config.db;
     this.logger = config.logger;
 
-    // Create KafkaConsumer with config
-    // AC-9: Pass logger to KafkaConsumer
-    this.kafkaConsumer = new KafkaConsumer({
+    // Create two KafkaConsumer instances (one per topic)
+    // They share the same groupId for partition coordination
+    // AC-9: Pass logger to both KafkaConsumers
+    this.delayDetectedConsumer = new KafkaConsumer({
+      serviceName: config.serviceName,
+      brokers: config.brokers,
+      username: config.username,
+      password: config.password,
+      groupId: config.groupId,
+      logger: config.logger,
+      ssl: config.ssl,
+    });
+
+    this.delayNotDetectedConsumer = new KafkaConsumer({
       serviceName: config.serviceName,
       brokers: config.brokers,
       username: config.username,
@@ -123,6 +140,9 @@ export class EventConsumer {
   /**
    * Start the event consumer
    * AC-1, AC-2: Subscribe to both topics
+   *
+   * Uses two separate KafkaConsumer instances to work around
+   * the auto-start behavior of subscribe().
    */
   async start(): Promise<void> {
     this.logger.info('Connecting to Kafka', {
@@ -130,16 +150,17 @@ export class EventConsumer {
     });
 
     try {
-      // Connect to Kafka
-      await this.kafkaConsumer.connect();
+      // Connect both consumers to Kafka
+      await this.delayDetectedConsumer.connect();
+      await this.delayNotDetectedConsumer.connect();
 
       this.logger.info('Successfully connected to Kafka', {
         serviceName: 'evaluation-coordinator',
       });
 
-      // AC-1: Subscribe to delay.detected topic with handler
+      // AC-1: Subscribe to delay.detected topic
       this.logger.info('Subscribing to topic', { topic: 'delay.detected' });
-      await this.kafkaConsumer.subscribe('delay.detected', async (message) => {
+      await this.delayDetectedConsumer.subscribe('delay.detected', async (message) => {
         try {
           // Parse the Kafka message value to get the actual payload
           if (!message.message.value) {
@@ -175,9 +196,9 @@ export class EventConsumer {
         }
       });
 
-      // AC-2: Subscribe to delay.not-detected topic with handler
+      // AC-2: Subscribe to delay.not-detected topic
       this.logger.info('Subscribing to topic', { topic: 'delay.not-detected' });
-      await this.kafkaConsumer.subscribe('delay.not-detected', async (message) => {
+      await this.delayNotDetectedConsumer.subscribe('delay.not-detected', async (message) => {
         try {
           // Parse the Kafka message value to get the actual payload
           if (!message.message.value) {
@@ -213,8 +234,6 @@ export class EventConsumer {
         }
       });
 
-      // Consumer is now running (subscribe() starts consumption automatically)
-
       this.started = true;
       this.stats.isRunning = true;
     } catch (error) {
@@ -229,19 +248,27 @@ export class EventConsumer {
    * Stop the event consumer
    */
   async stop(): Promise<void> {
-    if (!this.started && !this.kafkaConsumer.isConsumerRunning()) {
+    const isDetectedRunning = this.delayDetectedConsumer.isConsumerRunning();
+    const isNotDetectedRunning = this.delayNotDetectedConsumer.isConsumerRunning();
+
+    if (!this.started && !isDetectedRunning && !isNotDetectedRunning) {
       this.logger.warn('Consumer not running, nothing to stop', {
         serviceName: 'evaluation-coordinator',
       });
       return;
     }
 
-    this.logger.info('Shutting down Kafka consumer', {
+    this.logger.info('Shutting down Kafka consumers', {
       serviceName: 'evaluation-coordinator',
     });
 
     try {
-      await this.kafkaConsumer.disconnect();
+      // Disconnect both consumers
+      await Promise.all([
+        this.delayDetectedConsumer.disconnect(),
+        this.delayNotDetectedConsumer.disconnect(),
+      ]);
+
       this.started = false;
       this.stats.isRunning = false;
 
@@ -262,15 +289,19 @@ export class EventConsumer {
    * Get consumer statistics
    */
   getStats(): ConsumerStats {
-    // Update isRunning from kafka consumer
-    this.stats.isRunning = this.kafkaConsumer.isConsumerRunning();
+    // Update isRunning from both kafka consumers
+    const isDetectedRunning = this.delayDetectedConsumer.isConsumerRunning();
+    const isNotDetectedRunning = this.delayNotDetectedConsumer.isConsumerRunning();
+    this.stats.isRunning = isDetectedRunning || isNotDetectedRunning;
 
-    // Get stats from kafka consumer and merge
-    const kafkaStats = this.kafkaConsumer.getStats();
+    // Get stats from both kafka consumers and merge
+    const detectedStats = this.delayDetectedConsumer.getStats();
+    const notDetectedStats = this.delayNotDetectedConsumer.getStats();
+
     return {
       ...this.stats,
-      processedCount: this.stats.processedCount || kafkaStats.processedCount,
-      errorCount: this.stats.errorCount || kafkaStats.errorCount,
+      processedCount: this.stats.processedCount || (detectedStats.processedCount + notDetectedStats.processedCount),
+      errorCount: this.stats.errorCount || (detectedStats.errorCount + notDetectedStats.errorCount),
       isRunning: this.stats.isRunning,
     };
   }
@@ -284,6 +315,8 @@ export class EventConsumer {
     if (!this.started) {
       return false;
     }
-    return this.kafkaConsumer.isConsumerRunning();
+    const isDetectedRunning = this.delayDetectedConsumer.isConsumerRunning();
+    const isNotDetectedRunning = this.delayNotDetectedConsumer.isConsumerRunning();
+    return isDetectedRunning || isNotDetectedRunning;
   }
 }
