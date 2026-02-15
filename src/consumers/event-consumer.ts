@@ -213,11 +213,7 @@ export class EventConsumer {
         }
       });
 
-      // Start consuming from all subscribed topics
-      this.logger.info('Starting Kafka consumer for all subscribed topics', {
-        topics: this.kafkaConsumer.getSubscribedTopics(),
-      });
-      await this.kafkaConsumer.start();
+      // Consumer is now running (subscribe() starts consumption automatically)
 
       this.started = true;
       this.stats.isRunning = true;

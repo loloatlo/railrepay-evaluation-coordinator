@@ -24,10 +24,10 @@ import { EventConsumer } from '../../../src/consumers/event-consumer.js';
 
 // Mock @railrepay/kafka-client (interface-based mocking per guidelines)
 // Use vi.hoisted() to ensure it's available during mock hoisting
+// Matches REAL KafkaConsumer API: connect(), subscribe(), disconnect(), isConsumerRunning(), getStats()
 const mockKafkaConsumer = vi.hoisted(() => ({
   connect: vi.fn().mockResolvedValue(undefined),
   subscribe: vi.fn().mockResolvedValue(undefined),
-  start: vi.fn().mockResolvedValue(undefined),
   disconnect: vi.fn().mockResolvedValue(undefined),
   isConsumerRunning: vi.fn().mockReturnValue(true),
   getStats: vi.fn().mockReturnValue({
@@ -35,7 +35,6 @@ const mockKafkaConsumer = vi.hoisted(() => ({
     errorCount: 0,
     lastProcessedAt: null,
   }),
-  getSubscribedTopics: vi.fn().mockReturnValue([]),
 }));
 
 vi.mock('@railrepay/kafka-client', () => ({
@@ -137,8 +136,8 @@ describe('EventConsumer', () => {
   });
 
   describe('Lifecycle management', () => {
-    // Lifecycle: connect -> subscribe -> start
-    it('should follow connect -> subscribe -> start lifecycle', async () => {
+    // Lifecycle: connect -> subscribe (subscribe auto-starts per @railrepay/kafka-client API)
+    it('should follow connect -> subscribe lifecycle', async () => {
       const consumer = new EventConsumer({
         serviceName: 'evaluation-coordinator',
         brokers: ['broker1:9092'],
@@ -151,13 +150,12 @@ describe('EventConsumer', () => {
 
       await consumer.start();
 
-      // Verify lifecycle order
-      const callOrder = vi.mocked(mockKafkaConsumer.connect).mock.invocationCallOrder[0];
+      // Verify lifecycle order: connect must be called before subscribe
+      const connectOrder = vi.mocked(mockKafkaConsumer.connect).mock.invocationCallOrder[0];
       const subscribeOrder = vi.mocked(mockKafkaConsumer.subscribe).mock.invocationCallOrder[0];
-      const startOrder = vi.mocked(mockKafkaConsumer.start).mock.invocationCallOrder[0];
 
-      expect(callOrder).toBeLessThan(subscribeOrder!);
-      expect(subscribeOrder).toBeLessThan(startOrder!);
+      expect(connectOrder).toBeLessThan(subscribeOrder!);
+      // No separate start() method - subscribe() auto-starts consumption
     });
 
     // Lifecycle: disconnect on stop

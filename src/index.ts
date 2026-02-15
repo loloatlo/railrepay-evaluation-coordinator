@@ -455,7 +455,7 @@ export const initiateEvaluationWorkflowWithStepFailure = async (
 
 // Event consumer instance (initialized in start() if Kafka config available)
 let eventConsumer: EventConsumer | null = null;
-let server: ReturnType<typeof app.listen>;
+let server: any;
 let dbClient: any;
 
 // Start server if not in test mode
