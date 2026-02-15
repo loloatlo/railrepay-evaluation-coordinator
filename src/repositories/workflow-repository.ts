@@ -134,6 +134,7 @@ export class WorkflowRepository {
       eligible: boolean;
       scheme: string;
       compensation_pence: number;
+      delay_minutes: number; // BL-151 AC-8: delay_minutes in outbox payload type
       correlation_id: string;
     },
     correlationId: string

@@ -14,6 +14,9 @@
  * - AC-4: Store eligibility result in workflow (update status to COMPLETED with result, or FAILED)
  * - AC-6: Write outbox event with evaluation result (ADR-007 transactional outbox)
  * - AC-8: Handle eligibility-engine unavailability gracefully (workflow set to FAILED)
+ *
+ * BL-151 (TD-WHATSAPP-061) ADDITIONS:
+ * - AC-1: evaluation.completed outbox event payload includes delay_minutes (number)
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -144,6 +147,7 @@ describe('BL-146: DelayDetectedHandler - Eligibility Evaluation Wiring', () => {
     );
 
     // Assert - AC-6: Outbox event written with evaluation result
+    // BL-151 AC-1: outbox payload MUST include delay_minutes
     expect(mockWorkflowRepository.createOutboxEvent).toHaveBeenCalledWith(
       workflowId,
       'EVALUATION_WORKFLOW',
@@ -154,6 +158,7 @@ describe('BL-146: DelayDetectedHandler - Eligibility Evaluation Wiring', () => {
         eligible: true,
         scheme: 'DR30',
         compensation_pence: 0,
+        delay_minutes: 45,
         correlation_id: correlationId
       }),
       correlationId
@@ -468,6 +473,7 @@ describe('BL-146: DelayDetectedHandler - Eligibility Evaluation Wiring', () => {
     );
 
     // Assert - Outbox event still written (for downstream tracking)
+    // BL-151 AC-1: outbox payload MUST include delay_minutes
     expect(mockWorkflowRepository.createOutboxEvent).toHaveBeenCalledWith(
       workflowId,
       'EVALUATION_WORKFLOW',
@@ -478,6 +484,7 @@ describe('BL-146: DelayDetectedHandler - Eligibility Evaluation Wiring', () => {
         eligible: false,
         scheme: 'DR30',
         compensation_pence: 0,
+        delay_minutes: 10,
         correlation_id: correlationId
       }),
       correlationId

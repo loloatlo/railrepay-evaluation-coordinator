@@ -176,6 +176,7 @@ export class DelayDetectedHandler {
         );
 
         // AC-6: Write outbox event with evaluation result
+        // BL-151 AC-1: Include delay_minutes in outbox payload for downstream notification
         await this.workflowRepository.createOutboxEvent(
           workflow.id,
           'EVALUATION_WORKFLOW',
@@ -186,6 +187,7 @@ export class DelayDetectedHandler {
             eligible: eligibilityResult.eligible,
             scheme: eligibilityResult.scheme,
             compensation_pence: eligibilityResult.compensation_pence,
+            delay_minutes: typedPayload.delay_minutes,
             correlation_id: correlationId
           },
           correlationId
