@@ -127,7 +127,7 @@ describe('BL-146: DelayDetectedHandler - Eligibility Evaluation Wiring', () => {
         journey_id: journeyId,
         toc_code: 'GW',
         delay_minutes: 45,
-        ticket_fare_pence: 0 // AC-12: Default to 0
+        ticket_fare_pence: null // AC-7: null when absent (TD-FARE-001 behavior)
       },
       correlationId
     );

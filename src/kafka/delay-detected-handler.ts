@@ -34,6 +34,9 @@ export interface DelayDetectedPayload {
   is_cancellation: boolean;
   toc_code?: string; // AC-2: Optional for backward compatibility
   correlation_id?: string; // Optional in payload
+  ticket_fare_pence?: number | null;
+  ticket_class?: string | null;
+  ticket_type?: string | null;
 }
 
 /**
@@ -157,7 +160,7 @@ export class DelayDetectedHandler {
             journey_id: typedPayload.journey_id,
             toc_code: typedPayload.toc_code,
             delay_minutes: typedPayload.delay_minutes,
-            ticket_fare_pence: 0 // AC-12: Default to 0
+            ticket_fare_pence: typedPayload.ticket_fare_pence !== undefined ? typedPayload.ticket_fare_pence : null,
           },
           correlationId
         );

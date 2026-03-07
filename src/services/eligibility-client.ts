@@ -9,7 +9,7 @@ export interface EvaluateRequest {
   journey_id: string;
   toc_code?: string;
   delay_minutes: number;
-  ticket_fare_pence?: number;
+  ticket_fare_pence?: number | null;
 }
 
 export interface EligibilityResult {
