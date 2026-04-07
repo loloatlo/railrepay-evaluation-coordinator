@@ -117,6 +117,21 @@ export class DelayNotDetectedHandler {
         correlationId
       );
 
+      // BL-178/AC-1: Write outbox event with evaluation result (no-delay canonical reason)
+      await this.workflowRepository.createOutboxEvent(
+        workflow.id,
+        'EVALUATION_WORKFLOW',
+        'evaluation.completed',
+        {
+          journey_id: typedPayload.journey_id,
+          user_id: typedPayload.user_id,
+          is_eligible: false,
+          reason: 'no_delay_detected',
+          correlation_id: correlationId,
+        },
+        correlationId
+      );
+
       // AC-9: Log workflow creation with winston-logger
       this.logger.info('Created COMPLETED workflow for delay.not-detected event', {
         correlation_id: correlationId,

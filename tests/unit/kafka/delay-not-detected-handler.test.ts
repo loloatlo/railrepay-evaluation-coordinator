@@ -3,8 +3,9 @@
  *
  * Phase: TD-1 Test Specification (Jessie)
  * BL-145 (TD-EVAL-COORDINATOR-001): Add Kafka consumer infrastructure
+ * BL-178 (TD-1): evaluation-coordinator must publish evaluation.completed for no-delay events
  * Author: Jessie (QA Engineer)
- * Date: 2026-02-15
+ * Date: 2026-02-15 | Updated: 2026-04-07
  *
  * TDD Workflow (ADR-014):
  * 1. These tests MUST FAIL initially (RED phase - no implementation exists)
@@ -16,6 +17,12 @@
  * - AC-4: Extract correlation_id from event, propagate through all calls and logs
  * - AC-8: Idempotent processing -- duplicate events for same journey_id are ignored
  * - AC-9: Consumer handler uses @railrepay/winston-logger (no console.log)
+ *
+ * BL-178 Acceptance Criteria (new tests below):
+ * - BL-178/AC-1: After workflow completion, write evaluation.completed outbox event with is_eligible: false, reason: 'no_delay_detected'
+ * - BL-178/AC-2: Outbox event payload includes journey_id, user_id, is_eligible, reason, correlation_id
+ * - BL-178/AC-4: delay.detected → evaluation.completed flow must not be affected (regression)
+ * - BL-178/AC-5: Duplicate delay.not-detected events must not produce duplicate outbox events (idempotency)
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -57,6 +64,17 @@ describe('DelayNotDetectedHandler', () => {
       updateWorkflowStatus: vi.fn().mockResolvedValue(undefined),
       updateWorkflowEligibilityResult: vi.fn().mockResolvedValue(undefined),
       getWorkflowByJourneyId: vi.fn().mockResolvedValue(null),
+      // BL-178: createOutboxEvent must be callable on this handler
+      createOutboxEvent: vi.fn().mockResolvedValue({
+        id: 'outbox-event-001',
+        aggregate_id: 'workflow-123',
+        aggregate_type: 'EVALUATION_WORKFLOW',
+        event_type: 'evaluation.completed',
+        payload: {},
+        correlation_id: 'corr-abc',
+        published: false,
+        created_at: new Date(),
+      }),
     };
 
     mockLogger = sharedLogger;
@@ -458,6 +476,285 @@ describe('DelayNotDetectedHandler', () => {
       };
 
       await expect(handler.handle(payload)).resolves.not.toThrow();
+    });
+  });
+
+  // =========================================================================
+  // BL-178: evaluation-coordinator must publish evaluation.completed for no-delay events
+  // =========================================================================
+  describe('BL-178: outbox event publication for no-delay events', () => {
+    // BL-178/AC-1: Handler MUST call createOutboxEvent after completing the workflow
+    it('BL-178/AC-1: should call createOutboxEvent after workflow completion', async () => {
+      const payload = {
+        journey_id: 'journey-bl178-001',
+        user_id: 'user-bl178-001',
+        reason: 'below_threshold' as const,
+        correlation_id: 'corr-bl178-001',
+      };
+
+      await handler.handle(payload);
+
+      // createOutboxEvent must be called — this will FAIL until Blake adds the call
+      expect(mockWorkflowRepository.createOutboxEvent).toHaveBeenCalledTimes(1);
+    });
+
+    // BL-178/AC-1: event_type must be 'evaluation.completed'
+    it('BL-178/AC-1: should publish outbox event with event_type evaluation.completed', async () => {
+      const payload = {
+        journey_id: 'journey-bl178-002',
+        user_id: 'user-bl178-002',
+        reason: 'below_threshold' as const,
+        correlation_id: 'corr-bl178-002',
+      };
+
+      await handler.handle(payload);
+
+      expect(mockWorkflowRepository.createOutboxEvent).toHaveBeenCalledWith(
+        expect.any(String),          // aggregate_id (workflow.id)
+        'EVALUATION_WORKFLOW',        // aggregate_type
+        'evaluation.completed',       // event_type
+        expect.any(Object),           // payload
+        'corr-bl178-002'              // correlation_id
+      );
+    });
+
+    // BL-178/AC-1: aggregate_type must be 'EVALUATION_WORKFLOW' (mirrors delay-detected-handler pattern)
+    it('BL-178/AC-1: should use aggregate_type EVALUATION_WORKFLOW matching delay-detected pattern', async () => {
+      const payload = {
+        journey_id: 'journey-bl178-003',
+        user_id: 'user-bl178-003',
+        reason: 'darwin_unavailable' as const,
+        correlation_id: 'corr-bl178-003',
+      };
+
+      await handler.handle(payload);
+
+      const callArgs = mockWorkflowRepository.createOutboxEvent.mock.calls[0];
+      expect(callArgs[1]).toBe('EVALUATION_WORKFLOW');
+    });
+
+    // BL-178/AC-2: Outbox payload must include journey_id
+    it('BL-178/AC-2: outbox event payload must include journey_id', async () => {
+      const payload = {
+        journey_id: 'journey-bl178-payload-001',
+        user_id: 'user-bl178-payload-001',
+        reason: 'below_threshold' as const,
+        correlation_id: 'corr-bl178-payload-001',
+      };
+
+      await handler.handle(payload);
+
+      const outboxPayload = mockWorkflowRepository.createOutboxEvent.mock.calls[0][3];
+      expect(outboxPayload).toHaveProperty('journey_id', 'journey-bl178-payload-001');
+    });
+
+    // BL-178/AC-2: Outbox payload must include user_id
+    it('BL-178/AC-2: outbox event payload must include user_id', async () => {
+      const payload = {
+        journey_id: 'journey-bl178-payload-002',
+        user_id: 'user-bl178-payload-002',
+        reason: 'below_threshold' as const,
+        correlation_id: 'corr-bl178-payload-002',
+      };
+
+      await handler.handle(payload);
+
+      const outboxPayload = mockWorkflowRepository.createOutboxEvent.mock.calls[0][3];
+      expect(outboxPayload).toHaveProperty('user_id', 'user-bl178-payload-002');
+    });
+
+    // BL-178/AC-1: Outbox payload must include is_eligible: false
+    it('BL-178/AC-1: outbox event payload must include is_eligible: false', async () => {
+      const payload = {
+        journey_id: 'journey-bl178-payload-003',
+        user_id: 'user-bl178-payload-003',
+        reason: 'below_threshold' as const,
+        correlation_id: 'corr-bl178-payload-003',
+      };
+
+      await handler.handle(payload);
+
+      const outboxPayload = mockWorkflowRepository.createOutboxEvent.mock.calls[0][3];
+      expect(outboxPayload).toHaveProperty('is_eligible', false);
+    });
+
+    // BL-178/AC-1: Outbox payload reason must be 'no_delay_detected' (canonical downstream value)
+    it('BL-178/AC-1: outbox event payload must include reason: no_delay_detected', async () => {
+      // The handler maps all delay.not-detected events to reason 'no_delay_detected'
+      // in the outbox payload regardless of the internal reason (below_threshold / darwin_unavailable)
+      const payloadBelowThreshold = {
+        journey_id: 'journey-bl178-reason-001',
+        user_id: 'user-bl178-reason-001',
+        reason: 'below_threshold' as const,
+        correlation_id: 'corr-bl178-reason-001',
+      };
+
+      await handler.handle(payloadBelowThreshold);
+
+      const outboxPayload = mockWorkflowRepository.createOutboxEvent.mock.calls[0][3];
+      expect(outboxPayload).toHaveProperty('reason', 'no_delay_detected');
+    });
+
+    // BL-178/AC-1: reason 'no_delay_detected' applies to darwin_unavailable payloads too
+    it('BL-178/AC-1: outbox payload reason is no_delay_detected for darwin_unavailable events', async () => {
+      const payloadDarwinUnavailable = {
+        journey_id: 'journey-bl178-reason-002',
+        user_id: 'user-bl178-reason-002',
+        reason: 'darwin_unavailable' as const,
+        correlation_id: 'corr-bl178-reason-002',
+      };
+
+      await handler.handle(payloadDarwinUnavailable);
+
+      const outboxPayload = mockWorkflowRepository.createOutboxEvent.mock.calls[0][3];
+      expect(outboxPayload).toHaveProperty('reason', 'no_delay_detected');
+    });
+
+    // BL-178/AC-2: Outbox payload must include correlation_id
+    it('BL-178/AC-2: outbox event payload must include correlation_id', async () => {
+      const payload = {
+        journey_id: 'journey-bl178-corr-001',
+        user_id: 'user-bl178-corr-001',
+        reason: 'below_threshold' as const,
+        correlation_id: 'corr-bl178-corr-001',
+      };
+
+      await handler.handle(payload);
+
+      const outboxPayload = mockWorkflowRepository.createOutboxEvent.mock.calls[0][3];
+      expect(outboxPayload).toHaveProperty('correlation_id', 'corr-bl178-corr-001');
+    });
+
+    // BL-178/AC-2: aggregate_id must be the workflow id returned by createWorkflow
+    it('BL-178/AC-2: createOutboxEvent aggregate_id must be the workflow id', async () => {
+      const payload = {
+        journey_id: 'journey-bl178-wfid-001',
+        user_id: 'user-bl178-wfid-001',
+        reason: 'below_threshold' as const,
+        correlation_id: 'corr-bl178-wfid-001',
+      };
+
+      // createWorkflow mock returns { id: 'workflow-123', ... }
+      await handler.handle(payload);
+
+      const callArgs = mockWorkflowRepository.createOutboxEvent.mock.calls[0];
+      expect(callArgs[0]).toBe('workflow-123');
+    });
+
+    // BL-178/AC-4: Regression — createOutboxEvent must be called AFTER updateWorkflowStatus
+    // This ensures the outbox event is only written when the workflow is fully COMPLETED
+    it('BL-178/AC-4: createOutboxEvent must be called after updateWorkflowStatus', async () => {
+      const callOrder: string[] = [];
+      mockWorkflowRepository.updateWorkflowStatus.mockImplementation(async () => {
+        callOrder.push('updateWorkflowStatus');
+      });
+      mockWorkflowRepository.createOutboxEvent.mockImplementation(async () => {
+        callOrder.push('createOutboxEvent');
+        return {
+          id: 'outbox-event-order-001',
+          aggregate_id: 'workflow-123',
+          aggregate_type: 'EVALUATION_WORKFLOW',
+          event_type: 'evaluation.completed',
+          payload: {},
+          correlation_id: 'corr-bl178-order-001',
+          published: false,
+          created_at: new Date(),
+        };
+      });
+
+      const payload = {
+        journey_id: 'journey-bl178-order-001',
+        user_id: 'user-bl178-order-001',
+        reason: 'below_threshold' as const,
+        correlation_id: 'corr-bl178-order-001',
+      };
+
+      await handler.handle(payload);
+
+      const statusIdx = callOrder.indexOf('updateWorkflowStatus');
+      const outboxIdx = callOrder.indexOf('createOutboxEvent');
+      expect(statusIdx).toBeGreaterThanOrEqual(0);
+      expect(outboxIdx).toBeGreaterThan(statusIdx);
+    });
+
+    // BL-178/AC-5: Idempotency — duplicate events must not produce duplicate outbox events
+    it('BL-178/AC-5: duplicate delay.not-detected events must not produce duplicate outbox events', async () => {
+      // Simulate: workflow already exists for this journey (idempotency guard returns early)
+      mockWorkflowRepository.getWorkflowByJourneyId.mockResolvedValue({
+        id: 'workflow-existing-001',
+        journey_id: 'journey-bl178-idem-001',
+        status: 'COMPLETED',
+      });
+
+      const payload = {
+        journey_id: 'journey-bl178-idem-001',
+        user_id: 'user-bl178-idem-001',
+        reason: 'below_threshold' as const,
+        correlation_id: 'corr-bl178-idem-001',
+      };
+
+      await handler.handle(payload);
+
+      // Handler must return early — createOutboxEvent must NOT be called for duplicates
+      expect(mockWorkflowRepository.createOutboxEvent).not.toHaveBeenCalled();
+      // createWorkflow also must not be called
+      expect(mockWorkflowRepository.createWorkflow).not.toHaveBeenCalled();
+    });
+
+    // BL-178/AC-5: Idempotency preserved for INITIATED duplicate status
+    it('BL-178/AC-5: no outbox event on duplicate with INITIATED workflow status', async () => {
+      mockWorkflowRepository.getWorkflowByJourneyId.mockResolvedValue({
+        id: 'workflow-existing-002',
+        journey_id: 'journey-bl178-idem-002',
+        status: 'INITIATED',
+      });
+
+      const payload = {
+        journey_id: 'journey-bl178-idem-002',
+        user_id: 'user-bl178-idem-002',
+        reason: 'darwin_unavailable' as const,
+        correlation_id: 'corr-bl178-idem-002',
+      };
+
+      await handler.handle(payload);
+
+      expect(mockWorkflowRepository.createOutboxEvent).not.toHaveBeenCalled();
+    });
+
+    // BL-178/AC-4: Regression — existing tests for delay-not-detected handler still pass
+    // (No new tests needed here; the existing describe blocks above serve as the regression suite.
+    // This test confirms the handler completes without error when outbox is written successfully.)
+    it('BL-178/AC-4: handler completes successfully when outbox event is written (regression baseline)', async () => {
+      const payload = {
+        journey_id: 'journey-bl178-reg-001',
+        user_id: 'user-bl178-reg-001',
+        reason: 'below_threshold' as const,
+        correlation_id: 'corr-bl178-reg-001',
+      };
+
+      await expect(handler.handle(payload)).resolves.toBeUndefined();
+
+      // All three repository operations must complete
+      expect(mockWorkflowRepository.createWorkflow).toHaveBeenCalledTimes(1);
+      expect(mockWorkflowRepository.updateWorkflowStatus).toHaveBeenCalledTimes(1);
+      expect(mockWorkflowRepository.updateWorkflowEligibilityResult).toHaveBeenCalledTimes(1);
+      expect(mockWorkflowRepository.createOutboxEvent).toHaveBeenCalledTimes(1);
+    });
+
+    // BL-178: createOutboxEvent failure must propagate — allows Kafka retry
+    it('BL-178: should propagate error when createOutboxEvent throws', async () => {
+      mockWorkflowRepository.createOutboxEvent.mockRejectedValue(
+        new Error('Outbox insert failed')
+      );
+
+      const payload = {
+        journey_id: 'journey-bl178-err-001',
+        user_id: 'user-bl178-err-001',
+        reason: 'below_threshold' as const,
+        correlation_id: 'corr-bl178-err-001',
+      };
+
+      await expect(handler.handle(payload)).rejects.toThrow('Outbox insert failed');
     });
   });
 });
