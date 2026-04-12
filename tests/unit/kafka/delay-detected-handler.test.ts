@@ -37,6 +37,7 @@ vi.mock('@railrepay/winston-logger', () => ({
 
 describe('DelayDetectedHandler', () => {
   let mockWorkflowRepository: any;
+  let mockEligibilityClient: any;
   let mockLogger: any;
   let handler: DelayDetectedHandler;
 
@@ -44,6 +45,9 @@ describe('DelayDetectedHandler', () => {
     vi.clearAllMocks();
 
     // Mock WorkflowRepository (interface-based mocking)
+    // BL-161: Added missing methods that the handler calls on toc_code-missing
+    // and eligibility failure paths (createWorkflowStep, updateWorkflowStep,
+    // updateWorkflowStatus, updateWorkflowEligibilityResult, createOutboxEvent)
     mockWorkflowRepository = {
       createWorkflow: vi.fn().mockResolvedValue({
         id: 'workflow-123',
@@ -54,12 +58,42 @@ describe('DelayDetectedHandler', () => {
         updated_at: new Date(),
       }),
       getWorkflowByJourneyId: vi.fn().mockResolvedValue(null),
+      createWorkflowStep: vi.fn().mockResolvedValue({
+        id: 'step-001',
+        workflow_id: 'workflow-123',
+        step_type: 'ELIGIBILITY_CHECK',
+        status: 'FAILED',
+        started_at: new Date(),
+      }),
+      updateWorkflowStep: vi.fn().mockResolvedValue(undefined),
+      updateWorkflowStatus: vi.fn().mockResolvedValue(undefined),
+      updateWorkflowEligibilityResult: vi.fn().mockResolvedValue(undefined),
+      createOutboxEvent: vi.fn().mockResolvedValue({
+        id: 'outbox-001',
+        aggregate_id: 'workflow-123',
+        aggregate_type: 'EVALUATION_WORKFLOW',
+        event_type: 'evaluation.completed',
+        payload: {},
+        correlation_id: 'corr-789',
+        published: false,
+        created_at: new Date(),
+      }),
+    };
+
+    // BL-161: Mock EligibilityClient - required by handler constructor
+    mockEligibilityClient = {
+      evaluate: vi.fn().mockResolvedValue({
+        eligible: true,
+        scheme: 'DELAY_REPAY',
+        compensation_pence: 1500,
+      }),
     };
 
     mockLogger = sharedLogger;
 
     handler = new DelayDetectedHandler({
       workflowRepository: mockWorkflowRepository,
+      eligibilityClient: mockEligibilityClient,
       logger: mockLogger,
     });
   });
