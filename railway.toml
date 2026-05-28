@@ -3,7 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "sh -c 'npm run migrate:up && npm start'"
+startCommand = "sh -c 'node scripts/migrate-safe.cjs && npm start'"
 healthcheckPath = "/health"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
