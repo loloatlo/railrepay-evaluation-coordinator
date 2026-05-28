@@ -22,8 +22,16 @@ export const createEvaluateRouter = (db: any) => {
       });
     }
 
+    // Extract optional trigger payload fields from request body (ADR-029 Option A)
+    const { delay_minutes, toc_code, ticket_fare_pence } = (req.body ?? {}) as {
+      delay_minutes?: number;
+      toc_code?: string;
+      ticket_fare_pence?: number;
+    };
+    const triggerPayload = { delay_minutes, toc_code, ticket_fare_pence };
+
     try {
-      const result = await workflowService.initiateEvaluation(journey_id);
+      const result = await workflowService.initiateEvaluation(journey_id, triggerPayload);
 
       logger.info('Evaluation workflow initiated successfully', {
         correlation_id: result.correlation_id,

@@ -126,6 +126,6 @@ describe('Evaluate Routes - POST /evaluate/:journey_id', () => {
     const app = buildApp();
     await request(app).post(`/evaluate/${VALID_JOURNEY_ID}`);
 
-    expect(mockInitiateEvaluation).toHaveBeenCalledWith(VALID_JOURNEY_ID);
+    expect(mockInitiateEvaluation).toHaveBeenCalledWith(VALID_JOURNEY_ID, expect.any(Object));
   });
 });

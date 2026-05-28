@@ -122,38 +122,116 @@ describe('BL-311 AC-3: Cross-service smoke — BFF trigger → coordinator → e
       return;
     }
 
-    // DOCKER AVAILABLE: implement full integration test here.
-    // Blake's T2-impl will fill in the Testcontainers setup below.
-    // For now this body asserts the structural requirement that the smoke must exist.
+    // DOCKER AVAILABLE — Approach B (Testcontainers DB + in-process mock EE server)
+    // Spins up real Postgres + coordinator app in-process; EE mocked via HTTP server.
 
     // ── Step 1: start Postgres ────────────────────────────────────────────
-    // const { PostgreSqlContainer } = await import('@testcontainers/postgresql');
-    // const container = await new PostgreSqlContainer('postgres:15').start();
-    // const connectionString = container.getConnectionUri();
+    const { PostgreSqlContainer } = await import('@testcontainers/postgresql');
+    const pg = (await import('pg')).default;
+    const { resolve, dirname } = await import('path');
+    const { fileURLToPath } = await import('url');
+    const http = await import('http');
 
-    // ── Step 2: run coordinator migrations ───────────────────────────────
-    // await runMigrations(connectionString);
+    const container = await new PostgreSqlContainer('postgres:15-alpine')
+      .withDatabase('test')
+      .withUsername('test')
+      .withPassword('test')
+      .start();
 
-    // ── Step 3: nock eligibility-engine (Approach B) ──────────────────────
-    // const journeyId = 'smoke-' + Date.now();
-    // const evaluateResult = { journey_id: journeyId, eligible: true, scheme: 'DR30', ... };
-    // nock(process.env.ELIGIBILITY_ENGINE_URL || 'http://localhost:3002')
-    //   .post('/eligibility/evaluate')
-    //   .reply(200, evaluateResult);
+    const pool = new pg.Pool({
+      host: container.getHost(),
+      port: container.getPort(),
+      database: container.getDatabase(),
+      user: container.getUsername(),
+      password: container.getPassword(),
+    });
 
-    // ── Step 4-6: trigger + poll ──────────────────────────────────────────
-    // const response = await fetch(`http://localhost:PORT/evaluate/${journeyId}`, { method: 'POST', body: JSON.stringify({delay_minutes:47,toc_code:'GW',ticket_fare_pence:9850}) });
-    // expect(response.status).toBe(202);
-    // poll until workflow.status === 'COMPLETED'...
+    // ── Step 2: run coordinator migrations via node-pg-migrate runner ────
+    const { default: runMigrations } = await import('node-pg-migrate');
+    const migrationDir = resolve(
+      dirname(fileURLToPath(import.meta.url)),
+      '../../migrations'
+    );
+    await runMigrations({
+      databaseUrl: `postgresql://${container.getUsername()}:${container.getPassword()}@${container.getHost()}:${container.getPort()}/${container.getDatabase()}`,
+      dir: migrationDir,
+      direction: 'up',
+      migrationsTable: 'pgmigrations',
+      log: () => { /* suppress output in tests */ },
+    });
 
-    // ── Step 7-8: assertions ──────────────────────────────────────────────
-    // const status = await fetch(`http://localhost:PORT/status/${journeyId}`).then(r => r.json());
-    // expect(status.status).toBe('COMPLETED');
-    // expect(status.eligibility_result).not.toBeNull();
-    // expect(status.eligibility_result.eligible).toBeDefined();
+    // ── Step 3: mock eligibility-engine via real HTTP server ─────────────
+    const journeyId = 'aa000000-0000-4000-8000-aa0000000001';
+    const evaluateResult = {
+      journey_id: journeyId,
+      eligible: true,
+      scheme: 'DR30',
+      delay_minutes: 47,
+      compensation_percentage: 50,
+      compensation_pence: 4925,
+      ticket_fare_pence: 9850,
+      reasons: ['BL-311 smoke test'],
+      applied_rules: ['DR30_30MIN_50PCT'],
+      evaluation_timestamp: new Date().toISOString(),
+    };
 
-    // Placeholder until Blake implements: confirm the structure is correct
-    expect(true).toBe(true); // replace with real assertions after Blake's T2-impl
+    const eeServer = http.createServer((_req: import('http').IncomingMessage, res: import('http').ServerResponse) => {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(evaluateResult));
+    });
+    await new Promise<void>((r) => eeServer.listen(0, '127.0.0.1', r));
+    const eePort = (eeServer.address() as { port: number }).port;
+
+    process.env.ELIGIBILITY_ENGINE_URL = `http://127.0.0.1:${eePort}`;
+
+    // ── Step 4: start coordinator app in-process ──────────────────────────
+    const { createApp } = await import('../../src/index.js');
+    const app = createApp({ pool });
+    const appServer = app.listen(0, '127.0.0.1');
+    await new Promise<void>((r) => appServer.once('listening', r));
+    const appPort = (appServer.address() as { port: number }).port;
+
+    // ── Step 5: POST /evaluate/:journey_id ────────────────────────────────
+    const triggerRes = await fetch(
+      `http://127.0.0.1:${appPort}/evaluate/${journeyId}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ delay_minutes: 47, toc_code: 'GW', ticket_fare_pence: 9850 }),
+      }
+    );
+    expect(triggerRes.status).toBe(202);
+
+    // ── Step 6: poll /status/:journey_id until COMPLETED (max 10s) ────────
+    let workflowStatus: Record<string, unknown> = {};
+    const deadline = Date.now() + 10_000;
+    while (Date.now() < deadline) {
+      const statusRes = await fetch(`http://127.0.0.1:${appPort}/status/${journeyId}`);
+      if (statusRes.ok) {
+        workflowStatus = (await statusRes.json()) as Record<string, unknown>;
+        if (workflowStatus.status === 'COMPLETED' || workflowStatus.status === 'PARTIAL_SUCCESS') {
+          break;
+        }
+      }
+      await new Promise((r) => setTimeout(r, 500));
+    }
+
+    // ── Step 7-8: assertions — evaluate() was called AND its result stored ─
+    // AC-3: workflow must reach a terminal state (COMPLETED or PARTIAL_SUCCESS)
+    expect(['COMPLETED', 'PARTIAL_SUCCESS']).toContain(workflowStatus.status);
+
+    // AC-3: eligibility_result must be non-null (evaluate() path wrote its result)
+    expect(workflowStatus.eligibility_result).not.toBeNull();
+    expect(workflowStatus.eligibility_result).toBeDefined();
+    const result = workflowStatus.eligibility_result as Record<string, unknown>;
+    expect(typeof result.eligible).toBe('boolean');
+
+    // ── Cleanup ───────────────────────────────────────────────────────────
+    await new Promise<void>((r) => appServer.close(() => r()));
+    await new Promise<void>((r) => eeServer.close(() => r()));
+    delete process.env.ELIGIBILITY_ENGINE_URL;
+    await pool.end();
+    await container.stop();
   }, 60000);
 
   // ──────────────────────────────────────────────────────────────────────────

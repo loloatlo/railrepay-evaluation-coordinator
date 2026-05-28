@@ -21,7 +21,7 @@ export class WorkflowService {
     this.eligibilityClient = new EligibilityClient();
   }
 
-  async initiateEvaluation(journeyId: string) {
+  async initiateEvaluation(journeyId: string, triggerPayload?: { toc_code?: string; delay_minutes?: number; ticket_fare_pence?: number }) {
     const correlationId = uuidv4();
 
     logger.info('Initiating evaluation workflow', {
@@ -38,7 +38,7 @@ export class WorkflowService {
       evaluationsStartedCounter.inc({ journey_id: journeyId });
 
       // Execute eligibility check in background
-      this.executeEligibilityCheck(workflow.id, journeyId, correlationId).catch(err => {
+      this.executeEligibilityCheck(workflow.id, journeyId, correlationId, triggerPayload).catch(err => {
         logger.error('Eligibility check failed', {
           correlation_id: correlationId,
           error: err.message
@@ -60,9 +60,9 @@ export class WorkflowService {
     }
   }
 
-  private async executeEligibilityCheck(workflowId: string, journeyId: string, correlationId: string) {
+  private async executeEligibilityCheck(workflowId: string, journeyId: string, correlationId: string, triggerPayload?: { toc_code?: string; delay_minutes?: number; ticket_fare_pence?: number }) {
     const startTime = Date.now();
-    
+
     try {
       // Create workflow step for eligibility check
       const step = await this.workflowRepo.createWorkflowStep(
@@ -72,8 +72,15 @@ export class WorkflowService {
         'PENDING'
       );
 
-      // Call eligibility engine
-      const eligibilityResult = await this.eligibilityClient.checkEligibility(journeyId, correlationId);
+      // Call eligibility engine using evaluate() (POST calculate-and-write — ADR-029 Option A)
+      // delay_minutes defaults to 0 only when genuinely absent from the trigger payload
+      const evaluateRequest = {
+        journey_id: journeyId,
+        toc_code: triggerPayload?.toc_code,
+        delay_minutes: triggerPayload?.delay_minutes ?? 0,
+        ticket_fare_pence: triggerPayload?.ticket_fare_pence,
+      };
+      const eligibilityResult = await this.eligibilityClient.evaluate(evaluateRequest, correlationId);
 
       // Update step status to COMPLETED with payload
       await this.workflowRepo.updateWorkflowStep(

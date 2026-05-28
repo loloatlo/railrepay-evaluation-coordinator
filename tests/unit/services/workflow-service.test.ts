@@ -122,7 +122,7 @@ describe('WorkflowService', () => {
     it('creates workflow and returns workflow details', async () => {
       mockRepo.createWorkflow.mockResolvedValue(mockWorkflow);
       mockRepo.createWorkflowStep.mockResolvedValue(mockStep);
-      mockEligibilityClient.checkEligibility.mockResolvedValue({ eligible: false });
+      mockEligibilityClient.evaluate.mockResolvedValue({ eligible: false });
       mockRepo.updateWorkflowStep.mockResolvedValue(undefined);
       mockRepo.updateWorkflowStatus.mockResolvedValue(undefined);
 
@@ -143,7 +143,7 @@ describe('WorkflowService', () => {
     it('increments evaluationsStartedCounter on successful workflow creation', async () => {
       mockRepo.createWorkflow.mockResolvedValue(mockWorkflow);
       mockRepo.createWorkflowStep.mockResolvedValue(mockStep);
-      mockEligibilityClient.checkEligibility.mockResolvedValue({ eligible: false });
+      mockEligibilityClient.evaluate.mockResolvedValue({ eligible: false });
       mockRepo.updateWorkflowStep.mockResolvedValue(undefined);
       mockRepo.updateWorkflowStatus.mockResolvedValue(undefined);
 
@@ -197,7 +197,7 @@ describe('WorkflowService', () => {
         scheme: 'DR30',
         compensation_pence: 1250
       };
-      mockEligibilityClient.checkEligibility.mockResolvedValue(eligibilityResult);
+      mockEligibilityClient.evaluate.mockResolvedValue(eligibilityResult);
       mockRepo.updateWorkflowStep.mockResolvedValue(undefined);
       mockRepo.updateWorkflowStatus.mockResolvedValue(undefined);
       mockRepo.createOutboxEvent.mockResolvedValue(mockOutboxEvent);
@@ -232,7 +232,7 @@ describe('WorkflowService', () => {
     it('updates workflow to COMPLETED when not eligible', async () => {
       mockRepo.createWorkflow.mockResolvedValue(mockWorkflow);
       mockRepo.createWorkflowStep.mockResolvedValue(mockStep);
-      mockEligibilityClient.checkEligibility.mockResolvedValue({ eligible: false });
+      mockEligibilityClient.evaluate.mockResolvedValue({ eligible: false });
       mockRepo.updateWorkflowStep.mockResolvedValue(undefined);
       mockRepo.updateWorkflowStatus.mockResolvedValue(undefined);
 
@@ -249,7 +249,7 @@ describe('WorkflowService', () => {
     it('records workflow duration histogram on success', async () => {
       mockRepo.createWorkflow.mockResolvedValue(mockWorkflow);
       mockRepo.createWorkflowStep.mockResolvedValue(mockStep);
-      mockEligibilityClient.checkEligibility.mockResolvedValue({ eligible: false });
+      mockEligibilityClient.evaluate.mockResolvedValue({ eligible: false });
       mockRepo.updateWorkflowStep.mockResolvedValue(undefined);
       mockRepo.updateWorkflowStatus.mockResolvedValue(undefined);
 
@@ -274,7 +274,7 @@ describe('WorkflowService', () => {
         .mockRejectedValueOnce(timeoutError) // First createWorkflowStep fails -> triggers catch
         .mockResolvedValueOnce({ id: 'err-step', step_type: 'ELIGIBILITY_CHECK', status: 'TIMEOUT' });
 
-      mockEligibilityClient.checkEligibility.mockResolvedValue({ eligible: false });
+      mockEligibilityClient.evaluate.mockResolvedValue({ eligible: false });
       mockRepo.updateWorkflowStep.mockResolvedValue(undefined);
       mockRepo.updateWorkflowStatus.mockResolvedValue(undefined);
 
@@ -295,7 +295,7 @@ describe('WorkflowService', () => {
       mockRepo.createWorkflow.mockResolvedValue(mockWorkflow);
       const timeoutError = new Error('TIMEOUT error from eligibility-engine');
       mockRepo.createWorkflowStep.mockResolvedValue(mockStep);
-      mockEligibilityClient.checkEligibility.mockRejectedValue(timeoutError);
+      mockEligibilityClient.evaluate.mockRejectedValue(timeoutError);
       mockRepo.updateWorkflowStep.mockResolvedValue(undefined);
 
       // After the error, the catch block creates another step
@@ -323,7 +323,7 @@ describe('WorkflowService', () => {
       const httpError: any = new Error('HTTP_ERROR_500');
       httpError.status = 500;
       httpError.data = { error: 'Internal Server Error' };
-      mockEligibilityClient.checkEligibility.mockRejectedValue(httpError);
+      mockEligibilityClient.evaluate.mockRejectedValue(httpError);
       mockRepo.updateWorkflowStep.mockResolvedValue(undefined);
 
       // error path: createWorkflowStep is called again for error step
