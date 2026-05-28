@@ -21,7 +21,7 @@ export class WorkflowService {
     this.eligibilityClient = new EligibilityClient();
   }
 
-  async initiateEvaluation(journeyId: string, triggerPayload?: { toc_code?: string; delay_minutes?: number; ticket_fare_pence?: number }) {
+  async initiateEvaluation(journeyId: string, triggerPayload?: { toc_code?: string | null; delay_minutes?: number; ticket_fare_pence?: number }) {
     const correlationId = uuidv4();
 
     logger.info('Initiating evaluation workflow', {
@@ -60,10 +60,22 @@ export class WorkflowService {
     }
   }
 
-  private async executeEligibilityCheck(workflowId: string, journeyId: string, correlationId: string, triggerPayload?: { toc_code?: string; delay_minutes?: number; ticket_fare_pence?: number }) {
+  private async executeEligibilityCheck(workflowId: string, journeyId: string, correlationId: string, triggerPayload?: { toc_code?: string | null; delay_minutes?: number; ticket_fare_pence?: number }) {
     const startTime = Date.now();
 
     try {
+      // BL-313 AC-4/AC-5: Abort early if toc_code is null or absent.
+      // Calling evaluate() with UNKNOWN toc_code produces a silent wrong result
+      // (engine finds no rulepack, returns eligible:false incorrectly). Loud failure is better.
+      if (!triggerPayload?.toc_code) {
+        logger.error('Aborting eligibility check: toc_code is null or absent in triggerPayload', {
+          journey_id: journeyId,
+          correlation_id: correlationId,
+        });
+        await this.workflowRepo.updateWorkflowStatus(workflowId, 'FAILED', correlationId);
+        return;
+      }
+
       // Create workflow step for eligibility check
       const step = await this.workflowRepo.createWorkflowStep(
         workflowId,
@@ -76,7 +88,7 @@ export class WorkflowService {
       // delay_minutes defaults to 0 only when genuinely absent from the trigger payload
       const evaluateRequest = {
         journey_id: journeyId,
-        toc_code: triggerPayload?.toc_code,
+        toc_code: triggerPayload.toc_code,
         delay_minutes: triggerPayload?.delay_minutes ?? 0,
         ticket_fare_pence: triggerPayload?.ticket_fare_pence,
       };

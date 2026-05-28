@@ -202,7 +202,8 @@ describe('WorkflowService', () => {
       mockRepo.updateWorkflowStatus.mockResolvedValue(undefined);
       mockRepo.createOutboxEvent.mockResolvedValue(mockOutboxEvent);
 
-      await service.initiateEvaluation(JOURNEY_ID);
+      // Supply toc_code so executeEligibilityCheck proceeds past the ADR-030 abort guard
+      await service.initiateEvaluation(JOURNEY_ID, { toc_code: 'XC' });
 
       // Allow background async to settle
       await new Promise(r => setTimeout(r, 10));
@@ -236,7 +237,8 @@ describe('WorkflowService', () => {
       mockRepo.updateWorkflowStep.mockResolvedValue(undefined);
       mockRepo.updateWorkflowStatus.mockResolvedValue(undefined);
 
-      await service.initiateEvaluation(JOURNEY_ID);
+      // Supply toc_code so executeEligibilityCheck proceeds past the ADR-030 abort guard
+      await service.initiateEvaluation(JOURNEY_ID, { toc_code: 'XC' });
       await new Promise(r => setTimeout(r, 10));
 
       expect(mockRepo.updateWorkflowStatus).toHaveBeenCalledWith(
@@ -253,7 +255,8 @@ describe('WorkflowService', () => {
       mockRepo.updateWorkflowStep.mockResolvedValue(undefined);
       mockRepo.updateWorkflowStatus.mockResolvedValue(undefined);
 
-      await service.initiateEvaluation(JOURNEY_ID);
+      // Supply toc_code so executeEligibilityCheck proceeds past the ADR-030 abort guard
+      await service.initiateEvaluation(JOURNEY_ID, { toc_code: 'XC' });
       await new Promise(r => setTimeout(r, 10));
 
       expect(workflowDurationHistogram.observe).toHaveBeenCalledWith(
@@ -278,7 +281,8 @@ describe('WorkflowService', () => {
       mockRepo.updateWorkflowStep.mockResolvedValue(undefined);
       mockRepo.updateWorkflowStatus.mockResolvedValue(undefined);
 
-      await service.initiateEvaluation(JOURNEY_ID);
+      // Supply toc_code so executeEligibilityCheck proceeds past the ADR-030 abort guard
+      await service.initiateEvaluation(JOURNEY_ID, { toc_code: 'XC' });
       await new Promise(r => setTimeout(r, 10));
 
       // The error path should have been taken
@@ -305,7 +309,8 @@ describe('WorkflowService', () => {
 
       mockRepo.updateWorkflowStatus.mockResolvedValue(undefined);
 
-      await service.initiateEvaluation(JOURNEY_ID);
+      // Supply toc_code so executeEligibilityCheck proceeds past the ADR-030 abort guard
+      await service.initiateEvaluation(JOURNEY_ID, { toc_code: 'XC' });
       await new Promise(r => setTimeout(r, 10));
 
       expect(stepFailuresCounter.inc).toHaveBeenCalledWith({
@@ -333,7 +338,8 @@ describe('WorkflowService', () => {
 
       mockRepo.updateWorkflowStatus.mockResolvedValue(undefined);
 
-      await service.initiateEvaluation(JOURNEY_ID);
+      // Supply toc_code so executeEligibilityCheck proceeds past the ADR-030 abort guard
+      await service.initiateEvaluation(JOURNEY_ID, { toc_code: 'XC' });
       await new Promise(r => setTimeout(r, 10));
 
       expect(mockRepo.updateWorkflowStatus).toHaveBeenCalledWith(

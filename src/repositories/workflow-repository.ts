@@ -43,10 +43,12 @@ export class WorkflowRepository {
     const id = uuidv4();
 
     // Check for active workflow ATOMICALLY within transaction
-    // Include PARTIAL_SUCCESS to prevent duplicate workflows when eligibility check fails
+    // BL-313 AC-6 Fix B: Only INITIATED and IN_PROGRESS block re-evaluation.
+    // PARTIAL_SUCCESS (background eligibility step failed) and FAILED (e.g., null toc_code abort)
+    // are re-evaluable — removing them from the blocked set allows retry once the issue is fixed.
     const checkQuery = `
       SELECT id, status FROM evaluation_coordinator.evaluation_workflows
-      WHERE journey_id = $1 AND status IN ('INITIATED', 'IN_PROGRESS', 'PARTIAL_SUCCESS')
+      WHERE journey_id = $1 AND status IN ('INITIATED', 'IN_PROGRESS')
       LIMIT 1
     `;
 

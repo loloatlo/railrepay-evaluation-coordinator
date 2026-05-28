@@ -177,7 +177,8 @@ describe('BL-311: WorkflowService — evaluate() vs checkEligibility() method se
       mockRepo.updateWorkflowStatus.mockResolvedValue(undefined);
       mockRepo.createOutboxEvent.mockResolvedValue(undefined);
 
-      await service.initiateEvaluation(JOURNEY_ID);
+      // Supply toc_code so executeEligibilityCheck proceeds past the ADR-030 abort guard
+      await service.initiateEvaluation(JOURNEY_ID, { toc_code: 'XC' });
       // Allow background async to settle
       await new Promise(r => setTimeout(r, 20));
 
@@ -252,38 +253,55 @@ describe('BL-311: WorkflowService — evaluate() vs checkEligibility() method se
       );
     });
 
-    it('AC-2: evaluate() uses UNKNOWN/0 defaults only when toc_code/fare genuinely absent from trigger', async () => {
-      // AC-2 edge: when the trigger body omits toc_code/ticket_fare_pence (e.g. legacy or minimal
-      // trigger), the EligibilityClient.evaluate() defaults apply ('UNKNOWN'/0). This is
-      // acceptable for unknown values; not acceptable for values that WERE in the trigger.
+    it('AC-2: toc_code absent from trigger → ABORT (evaluate NOT called, workflow FAILED, error logged)', async () => {
+      // AC-2 re-aligned per ADR-030 / BL-313:
+      // The OLD behavior (toc_code absent → evaluate('UNKNOWN')) is ABOLISHED.
+      // NEW behavior: toc_code absent/null → coordinator ABORTS immediately:
+      //   - logger.error called referencing 'toc_code' + { journey_id }
+      //   - workflow status set to FAILED
+      //   - evaluate() NOT called
+      //
+      // NOTE: ticket_fare_pence defaulting to 0 when absent is still valid behavior
+      // when toc_code IS present (see AC-2 first test above). This test only covers
+      // the toc_code-absent abort path.
+      //
+      // Self-fix applied by Jessie during T2-test handback (BL-313): the original
+      // test asserted evaluate() would be called with 'UNKNOWN' — that premise is
+      // abolished by ADR-030. The semantic requirement being tested is now:
+      // "absent toc_code → abort, not silent UNKNOWN default".
 
       mockRepo.createWorkflow.mockResolvedValue(mockWorkflow);
       mockRepo.createWorkflowStep.mockResolvedValue(mockStep);
-      mockEligibilityClient.evaluate.mockResolvedValue({ ...mockEligibilityResult, toc_code: 'UNKNOWN' });
+      mockEligibilityClient.evaluate.mockResolvedValue(mockEligibilityResult);
       mockEligibilityClient.checkEligibility.mockResolvedValue(mockEligibilityResult);
       mockRepo.updateWorkflowStep.mockResolvedValue(undefined);
       mockRepo.updateWorkflowStatus.mockResolvedValue(undefined);
-      mockRepo.createOutboxEvent.mockResolvedValue(undefined);
 
-      // Trigger with only delay_minutes, no toc_code/fare
+      // Trigger with only delay_minutes — toc_code intentionally absent (triggers abort)
       await service.initiateEvaluation(JOURNEY_ID, {
         delay_minutes: TRIGGER_DELAY_MINUTES,
-        // toc_code and ticket_fare_pence intentionally absent
+        // toc_code intentionally absent — ADR-030 abort path
       } as any);
       await new Promise(r => setTimeout(r, 20));
 
-      // Even with minimal trigger payload, evaluate() must be called (not checkEligibility)
-      expect(mockEligibilityClient.evaluate).toHaveBeenCalled();
+      // AC-2: evaluate() must NOT be called (abort fires before reaching it)
+      expect(mockEligibilityClient.evaluate).not.toHaveBeenCalled();
       expect(mockEligibilityClient.checkEligibility).not.toHaveBeenCalled();
 
-      // And journey_id + delay_minutes must still be present
-      expect(mockEligibilityClient.evaluate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          journey_id: JOURNEY_ID,
-          delay_minutes: TRIGGER_DELAY_MINUTES,
-        }),
+      // AC-2: workflow must be set to FAILED (not PARTIAL_SUCCESS or COMPLETED)
+      expect(mockRepo.updateWorkflowStatus).toHaveBeenCalledWith(
+        WORKFLOW_ID,
+        'FAILED',
         expect.any(String)
       );
+
+      // AC-2: logger.error must have been called referencing toc_code
+      const errorCalls = sharedLogger.error.mock.calls;
+      const hasAbortLog = errorCalls.some((call: any[]) => {
+        const msg = call[0] ?? '';
+        return typeof msg === 'string' && msg.toLowerCase().includes('toc_code');
+      });
+      expect(hasAbortLog).toBe(true);
     });
   });
 
@@ -339,7 +357,9 @@ describe('BL-311: WorkflowService — evaluate() vs checkEligibility() method se
       mockRepo.updateWorkflowStep.mockResolvedValue(undefined);
       mockRepo.updateWorkflowStatus.mockResolvedValue(undefined);
 
-      await service.initiateEvaluation(JOURNEY_ID);
+      // Supply toc_code so executeEligibilityCheck proceeds past the ADR-030 abort guard
+      // and reaches the evaluate()-rejection error path that AC-4 is testing
+      await service.initiateEvaluation(JOURNEY_ID, { toc_code: 'XC' });
       await new Promise(r => setTimeout(r, 20));
 
       // AC-4: The error log must carry the error message/cause
