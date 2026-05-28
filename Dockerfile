@@ -35,6 +35,9 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/migrations ./migrations
 COPY .pgmigrate.json ./
 
+# Copy operational scripts (migrate-safe.cjs etc.)
+COPY scripts/ ./scripts/
+
 # Set NODE_ENV
 ENV NODE_ENV=production
 
