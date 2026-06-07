@@ -38,8 +38,18 @@ export class EligibilityClient {
     // AC-12: Default ticket_fare_pence to 0 if not provided
     const ticket_fare_pence = request.ticket_fare_pence ?? 0;
 
-    // AC-9: Default toc_code to 'UNKNOWN' if not provided
-    const toc_code = request.toc_code ?? 'UNKNOWN';
+    // BL-315 AC-V4: Guard against null/undefined/empty toc_code.
+    // Sending 'UNKNOWN' to the eligibility-engine causes a 400 response which
+    // propagates as a workflow failure and ~30s BFF timeout. Fail fast instead.
+    if (!request.toc_code) {
+      logger.warn('EligibilityClient.evaluate() called with missing toc_code — failing fast, NOT sending UNKNOWN downstream', {
+        journey_id: request.journey_id,
+        toc_code: request.toc_code,
+        correlation_id: correlationId,
+      });
+      throw new Error('MISSING_TOC_CODE');
+    }
+    const toc_code = request.toc_code;
 
     const url = `${this.baseUrl}/eligibility/evaluate`;
     const payload = {
