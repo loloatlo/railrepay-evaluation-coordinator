@@ -187,8 +187,11 @@ describe('BL-311: POST /evaluate/:journey_id route — body field forwarding (AC
 
     it('AC-5: route still works with no body (backward compat — empty trigger payload)', async () => {
       // AC-5: When BFF sends no body (legacy / minimal trigger), route must still
-      // invoke initiateEvaluation with journey_id and an empty/undefined payload
-      // (evaluate() client defaults apply: toc_code = UNKNOWN, ticket_fare_pence = 0).
+      // invoke initiateEvaluation with journey_id and an empty/undefined payload.
+      // NOTE: the old comment "toc_code = UNKNOWN" is stale — BL-315 AC-V4 supersedes
+      // BL-146 AC-9; sending 'UNKNOWN' is now an error. The route layer itself does not
+      // apply the UNKNOWN default; the guard now lives in EligibilityClient.evaluate()
+      // (BL-315). This test only asserts the route invokes initiateEvaluation (route concern).
 
       mockInitiateEvaluation.mockResolvedValue({
         workflow_id: 'wf-bl311-005',

@@ -14,13 +14,33 @@
  * - AC-2: Pass required fields: journey_id, toc_code, delay_minutes, ticket_fare_pence
  * - AC-5: Correlation ID propagation on HTTP calls (X-Correlation-ID header)
  * - AC-8: Handle eligibility-engine unavailability gracefully (timeout, 5xx, connection refused)
- * - AC-9: Handle missing toc_code — use default 'UNKNOWN' if not in payload
+ * - AC-9: [SUPERSEDED BY BL-315 AC-V4] — original: "use default 'UNKNOWN' if not in payload".
+ *         BL-315 AC-V4 intentionally replaces this behavior: sending 'UNKNOWN' caused the
+ *         eligibility-engine to return 400, which propagated as a workflow failure and a
+ *         ~30-second BFF timeout. The corrected contract is: do NOT send 'UNKNOWN'; instead
+ *         log a logger.warn with journey_id context and fail fast. See the updated test below.
  * - AC-12: ticket_fare_pence defaults to 0 when unavailable
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import axios from 'axios';
 import { EligibilityClient } from '../../../src/services/eligibility-client.js';
+
+// ---------------------------------------------------------------------------
+// Shared logger mock (guideline #11 — OUTSIDE factory via vi.hoisted(), same instance)
+// vi.hoisted() is required in Vitest so the reference is available when vi.mock()
+// factory is hoisted to the top of the module (avoids "Cannot access before init" TDZ).
+// ---------------------------------------------------------------------------
+const sharedLogger = vi.hoisted(() => ({
+  info: vi.fn(),
+  error: vi.fn(),
+  warn: vi.fn(),
+  debug: vi.fn(),
+}));
+
+vi.mock('@railrepay/winston-logger', () => ({
+  createLogger: vi.fn(() => sharedLogger),
+}));
 
 // Mock axios module
 vi.mock('axios', () => ({
@@ -144,49 +164,70 @@ describe('BL-146: EligibilityClient.evaluate() - POST /eligibility/evaluate', ()
   });
 
   /**
-   * AC-9: Handle missing toc_code — default to 'UNKNOWN'
+   * AC-9: Handle missing toc_code — corrected behavior per BL-315 AC-V4
+   *
+   * Superseded by BL-315 AC-V4: the OLD AC-9 contract ("default to 'UNKNOWN'")
+   * is intentionally replaced. Sending 'UNKNOWN' to the eligibility-engine causes
+   * a 400 "Unknown TOC code: UNKNOWN" which propagated as a ~30s BFF timeout.
+   *
+   * NEW contract (BL-315 AC-V4): when toc_code is missing/null/undefined,
+   * EligibilityClient.evaluate() MUST:
+   *   (a) NOT call axios.post with toc_code === 'UNKNOWN'
+   *   (b) emit logger.warn with journey_id context
+   *   (c) fail fast (reject or return without a successful downstream call)
+   *
+   * FAILS TODAY (before Blake's fix): the code still does `request.toc_code ?? 'UNKNOWN'`
+   * and calls axios.post — so (a) and (b) fail.
    */
-  it('should default toc_code to UNKNOWN when not provided in request', async () => {
-    // Arrange
+  it('should NOT send toc_code="UNKNOWN" when toc_code is missing — warn and fail fast (BL-315 AC-V4, supersedes BL-146 AC-9)', async () => {
+    // Arrange — toc_code intentionally omitted (undefined)
     const evaluateRequest = {
       journey_id: journeyId,
-      // toc_code intentionally omitted
+      // toc_code intentionally omitted — BL-315 AC-V4 trigger condition
       delay_minutes: 45,
       ticket_fare_pence: 2500
     };
 
-    const mockResponse = {
+    // axios.post mock present in case current code reaches it (allows us to inspect calls)
+    vi.mocked(axios.post).mockResolvedValue({
       data: {
         journey_id: journeyId,
         eligible: false,
-        scheme: 'UNKNOWN_TOC',
+        scheme: 'DR30',
         delay_minutes: 45,
         compensation_percentage: 0,
         compensation_pence: 0,
         ticket_fare_pence: 2500,
-        reasons: ['TOC code UNKNOWN not recognized, eligibility cannot be determined'],
+        reasons: [],
         applied_rules: [],
         evaluation_timestamp: '2026-02-15T10:00:00.000Z'
       }
-    };
-    vi.mocked(axios.post).mockResolvedValue(mockResponse);
+    });
 
-    // Act
-    const result = await client.evaluate(evaluateRequest, correlationId);
+    // Act — swallow any thrown error (fast-fail is the expected new behavior)
+    try {
+      await client.evaluate(evaluateRequest, correlationId);
+    } catch (_e) {
+      // fast-fail expected — swallow
+    }
 
-    // Assert - AC-9: toc_code should be 'UNKNOWN' in request
-    expect(axios.post).toHaveBeenCalledWith(
-      'http://localhost:3002/eligibility/evaluate',
-      expect.objectContaining({
-        journey_id: journeyId,
-        toc_code: 'UNKNOWN', // Defaulted to UNKNOWN
-        delay_minutes: 45,
-        ticket_fare_pence: 2500
-      }),
-      expect.any(Object)
+    // Assert (a): axios.post must NOT have been called with toc_code === 'UNKNOWN'
+    // FAILS TODAY: post IS called with { toc_code: 'UNKNOWN', ... }
+    if (vi.mocked(axios.post).mock.calls.length > 0) {
+      for (const call of vi.mocked(axios.post).mock.calls) {
+        const body = call[1] as Record<string, unknown>;
+        expect(body.toc_code).not.toBe('UNKNOWN');
+      }
+    }
+
+    // Assert (b): logger.warn MUST have been called with journey_id context
+    // FAILS TODAY: no warn logged — code silently substitutes 'UNKNOWN'
+    expect(sharedLogger.warn).toHaveBeenCalled();
+    const warnCalls = sharedLogger.warn.mock.calls;
+    const anyCallHasJourneyId = warnCalls.some(([, meta]: [string, Record<string, unknown>]) =>
+      meta && typeof meta === 'object' && meta.journey_id === journeyId
     );
-
-    expect(result.eligible).toBe(false);
+    expect(anyCallHasJourneyId).toBe(true);
   });
 
   /**
